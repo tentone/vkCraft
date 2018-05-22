@@ -6,6 +6,7 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include <iostream>
+#include <vector>
 
 class VkCraft
 {
@@ -14,7 +15,7 @@ public:
 	{
 		initWindow();
 		initVulkan();
-		mainLoop();
+		//mainLoop();
 		cleanup();
 	}
 private:
@@ -60,6 +61,16 @@ private:
 		{
 			throw std::runtime_error("Failed to create vulkan instance!");
 		}
+		
+		//Check extensions available
+		uint32_t extensionCount = 0;
+		std::vector<VkExtensionProperties> extensions(extensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+		for(uint32_t i = 0; i < extensions.size(); i++)
+		{
+			std::cout << "\n" << extensions[i].extensionName << std::endl;
+		}
 	}
 
 	//Logic loop
@@ -74,12 +85,16 @@ private:
 	//Cleanup memory
 	void cleanup()
 	{
+		std::cout << "Cleanup" << std::endl;
+
+		//Vulkan instance
+		vkDestroyInstance(instance, nullptr);
+
 		//Window
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
 };
-
 
 int main()
 {
