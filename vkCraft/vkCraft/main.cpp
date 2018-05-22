@@ -1,38 +1,99 @@
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+#include <GLFW/glfw3.h>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
-
 #include <iostream>
+
+class VkCraft
+{
+public:
+	void run()
+	{
+		initWindow();
+		initVulkan();
+		mainLoop();
+		cleanup();
+	}
+private:
+	GLFWwindow * window;
+	VkInstance instance;
+	
+	//Initialize GLFW window
+	void initWindow()
+	{
+		glfwInit();
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		window = glfwCreateWindow(800, 600, "VkCraft", nullptr, nullptr);
+	}
+	
+	//Initialize vulkan
+	void initVulkan()
+	{
+		createInstance();
+	}
+
+	//Create a new vulkan instance
+	void createInstance()
+	{
+		VkApplicationInfo appInfo = {};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = "VkCraft";
+		appInfo.pEngineName = "No Engine";
+		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.apiVersion = VK_API_VERSION_1_0;
+
+		VkInstanceCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		createInfo.pApplicationInfo = &appInfo;
+
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		createInfo.enabledExtensionCount = glfwExtensionCount;
+		createInfo.ppEnabledExtensionNames = glfwExtensions;
+
+		if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create vulkan instance!");
+		}
+	}
+
+	//Logic loop
+	void mainLoop()
+	{
+		while(!glfwWindowShouldClose(window))
+		{
+			glfwPollEvents();
+		}
+	}
+	
+	//Cleanup memory
+	void cleanup()
+	{
+		//Window
+		glfwDestroyWindow(window);
+		glfwTerminate();
+	}
+};
+
 
 int main()
 {
-	glfwInit();
+	VkCraft app;
 
-	//Create window
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Vulkan window", nullptr, nullptr);
-	
-	//Check supported extensions
-	uint32_t extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-	std::cout << extensionCount << " extensions supported" << std::endl;
-
-	glm::mat4 matrix;
-	glm::vec4 vec;
-	auto test = matrix * vec;
-
-	while(!glfwWindowShouldClose(window))
+	try
 	{
-		glfwPollEvents();
+		app.run();
+	}
+	catch (const std::runtime_error &error)
+	{
+		std::cerr << error.what() << std::endl;
+		return EXIT_FAILURE;
 	}
 
-	glfwDestroyWindow(window);
-	glfwTerminate();
-
-	return 0;
+	return EXIT_SUCCESS;
 }

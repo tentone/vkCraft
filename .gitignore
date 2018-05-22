@@ -32,3 +32,8 @@ vkCraft/.vs
 *.exe
 *.out
 *.app
+
+*.tlog
+*.lastbuildstate
+*.ilk
+*.pdb

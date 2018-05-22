@@ -110,12 +110,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.73.0\Include;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glm;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\VulkanSDK\1.1.73.0\Include;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.73.0\Lib;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.73.0\Lib;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
