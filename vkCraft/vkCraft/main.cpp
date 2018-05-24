@@ -19,9 +19,11 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
+//Declare the debug report extension
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
 {
 	auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+
 	if(func != nullptr)
 	{
 		return func(instance, pCreateInfo, pAllocator, pCallback);
@@ -32,10 +34,12 @@ VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCa
 	}
 }
 
+//Destroy the debug report extension
 void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator)
 {
 	auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
-	if (func != nullptr)
+	
+	if(func != nullptr)
 	{
 		func(instance, callback, pAllocator);
 	}
@@ -66,6 +70,9 @@ private:
 	GLFWwindow *window;
 	VkInstance instance;
 	VkDebugReportCallbackEXT callback;
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	VkDevice device;
+	VkQueue graphicsQueue;
 
 	//Initialize GLFW window
 	void initWindow()
@@ -87,6 +94,7 @@ private:
 		
 		//Pick a device
 		pickPhysicalDevice();
+		createLogicalDevice();
 	}
 
 	//Create a new vulkan instance
@@ -137,26 +145,23 @@ private:
 			throw std::runtime_error("Failed to create vulkan instance!");
 		}
 
-		/*
 		//Check extensions available
 		uint32_t extensionCount = 0;
 		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-		std::vector<VkExtensionProperties> extensions(extensionCount);
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+		std::vector<VkExtensionProperties> vkExtensions(extensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, vkExtensions.data());
 		
-		std::cout << "Available extensions:" << std::endl;
-		for(uint32_t i = 0; i < extensions.size(); i++)
+		std::cout << "Vulkan extensions:" << std::endl;
+		for(uint32_t i = 0; i < vkExtensions.size(); i++)
 		{
-			std::cout << extensions[i].extensionName << std::endl;
+			std::cout << vkExtensions[i].extensionName << std::endl;
 		}
-		*/
 	}
 	
 	//Choose a physical device
 	void pickPhysicalDevice()
 	{
-		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -183,7 +188,7 @@ private:
 		}
 	}
 
-
+	//Check which queue families are supported by the device (we only need it to support graphics rendering)
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
 	{
 		QueueFamilyIndices indices;
@@ -235,7 +240,41 @@ private:
 	//Create a logical device
 	void createLogicalDevice()
 	{
+		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
+		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily;
+		queueCreateInfo.queueCount = 1;
+
+		float queuePriority = 1.0f;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+
+		VkPhysicalDeviceFeatures deviceFeatures = {};
+
+		VkDeviceCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		createInfo.pQueueCreateInfos = &queueCreateInfo;
+		createInfo.queueCreateInfoCount = 1;
+		createInfo.pEnabledFeatures = &deviceFeatures;
+		createInfo.enabledExtensionCount = 0;
+
+		if(enableValidationLayers)
+		{
+			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+			createInfo.ppEnabledLayerNames = validationLayers.data();
+		}
+		else
+		{
+			createInfo.enabledLayerCount = 0;
+		}
+
+		if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create the logical device!");
+		}
+
+		vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
 	}
 
 	//Setup debug callback
@@ -288,12 +327,21 @@ private:
 	{
 		std::cout << "Cleanup" << std::endl;
 
+		//Device
+		vkDestroyDevice(device, nullptr);
+		
 		//Vulkan instance
 		vkDestroyInstance(instance, nullptr);
 
 		//Window
 		glfwDestroyWindow(window);
 		glfwTerminate();
+
+		//If validation layers are enabled destroy debug callback
+		if(enableValidationLayers)
+		{
+			DestroyDebugReportCallbackEXT(instance, callback, nullptr);
+		}
 	}
 
 	//Check if validation layers are supported
@@ -336,6 +384,7 @@ private:
 	}
 };
 
+//Main entry point
 int main()
 {
 	VkCraft app;
