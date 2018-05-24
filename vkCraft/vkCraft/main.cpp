@@ -37,7 +37,7 @@ VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCa
 //Destroy the debug report extension
 void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator)
 {
-	auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+	auto func = (PFN_vkDestroyDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
 	
 	if(func != nullptr)
 	{
@@ -104,16 +104,33 @@ private:
 
 		//Pick a device
 		pickPhysicalDevice();
-		createLogicalDevice();
+		//createLogicalDevice();
+	}
+	
+	//Logic loop
+	void mainLoop()
+	{
+		while(!glfwWindowShouldClose(window))
+		{
+			glfwPollEvents();
+		}
 	}
 
-	//Create a window surface using GLFW
-	void createSurface()
+	//Cleanup memory
+	void cleanup()
 	{
-		if(glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
+		vkDestroyDevice(device, nullptr);
+
+		if (enableValidationLayers)
 		{
-			throw std::runtime_error("Failed to create window surface");
+			DestroyDebugReportCallbackEXT(instance, callback, nullptr);
 		}
+
+		vkDestroySurfaceKHR(instance, surface, nullptr);
+		vkDestroyInstance(instance, nullptr);
+
+		glfwDestroyWindow(window);
+		glfwTerminate();
 	}
 
 	//Create a new vulkan instance
@@ -175,7 +192,35 @@ private:
 			std::cout << vkExtensions[i].extensionName << std::endl;
 		}
 	}
-	
+
+	//Setup debug callback
+	void setupDebugCallback()
+	{
+		if (!enableValidationLayers)
+		{
+			return;
+		}
+
+		VkDebugReportCallbackCreateInfoEXT createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+		createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+		createInfo.pfnCallback = debugCallback;
+
+		if (CreateDebugReportCallbackEXT(instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to set up debug callback!");
+		}
+	}
+
+	//Create a window surface using GLFW
+	void createSurface()
+	{
+		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create window surface");
+		}
+	}
+
 	//Choose a physical device
 	void pickPhysicalDevice()
 	{
@@ -205,68 +250,16 @@ private:
 		}
 	}
 
-	//Check which queue families are supported by the device (we only need it to support graphics rendering)
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
-	{
-		QueueFamilyIndices indices;
-
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-		int i = 0;
-		for(const auto& queueFamily : queueFamilies)
-		{
-			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-
-			if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT && presentSupport)
-			{
-				indices.graphicsFamily = i;
-			}
-
-			if(indices.isComplete())
-			{
-				break;
-			}
-
-			i++;
-		}
-
-		return indices;
-	}
-
-	//Check if a device has all the required capabilities (is a discrete GPU and supports geometry shading).
-	bool isDeviceSuitable(VkPhysicalDevice device)
-	{
-		/*
-		//Properties
-		VkPhysicalDeviceProperties deviceProperties;
-		vkGetPhysicalDeviceProperties(device, &deviceProperties);
-
-		//Features
-		VkPhysicalDeviceFeatures deviceFeatures;
-		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-		return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader;
-		*/
-
-		QueueFamilyIndices indices = findQueueFamilies(device);
-		return indices.isComplete();
-	}
-
 	//Create a logical device
 	void createLogicalDevice()
 	{
 		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-		std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
+		std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
 
 		float queuePriority = 1.0f;
-		for(int queueFamily : uniqueQueueFamilies)
+		for (int queueFamily : uniqueQueueFamilies)
 		{
 			VkDeviceQueueCreateInfo queueCreateInfo = {};
 			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -304,23 +297,61 @@ private:
 		vkGetDeviceQueue(device, indices.presentFamily, 0, &presentQueue);
 	}
 
-	//Setup debug callback
-	void setupDebugCallback()
+	//Check if a device has all the required capabilities (is a discrete GPU and supports geometry shading).
+	bool isDeviceSuitable(VkPhysicalDevice device)
 	{
-		if(!enableValidationLayers)
+		/*
+		//Properties
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+		//Features
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+		return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader;
+		*/
+
+		QueueFamilyIndices indices = findQueueFamilies(device);
+		return indices.isComplete();
+	}
+
+	//Check which queue families are supported by the device (we only need it to support graphics rendering)
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
+	{
+		QueueFamilyIndices indices;
+
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+		int i = 0;
+		for(const auto& queueFamily : queueFamilies)
 		{
-			return;
+			if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			{
+				indices.graphicsFamily = i;
+			}
+
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+
+			if(queueFamily.queueCount > 0 && presentSupport)
+			{
+				indices.graphicsFamily = i;
+			}
+
+			if(indices.isComplete())
+			{
+				break;
+			}
+
+			i++;
 		}
 
-		VkDebugReportCallbackCreateInfoEXT createInfo = {};
-		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-		createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-		createInfo.pfnCallback = debugCallback;
-
-		if(CreateDebugReportCallbackEXT(instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to set up debug callback!");
-		}
+		return indices;
 	}
 
 	//Get required extensions if validation layers are active also add debug extension to the list
@@ -340,34 +371,6 @@ private:
 		return extensions;
 	}
 
-	//Logic loop
-	void mainLoop()
-	{
-		while(!glfwWindowShouldClose(window))
-		{
-			glfwPollEvents();
-		}
-	}
-	
-	//Cleanup memory
-	void cleanup()
-	{
-		std::cout << "Cleanup" << std::endl;
-
-		vkDestroyDevice(device, nullptr);
-
-		if (enableValidationLayers)
-		{
-			DestroyDebugReportCallbackEXT(instance, callback, nullptr);
-		}
-
-		vkDestroySurfaceKHR(instance, surface, nullptr);
-		vkDestroyInstance(instance, nullptr);
-
-		glfwDestroyWindow(window);
-		glfwTerminate();
-	}
-
 	//Check if validation layers are supported
 	bool checkValidationLayerSupport()
 	{
@@ -383,7 +386,7 @@ private:
 
 			for(const auto& layerProperties : availableLayers)
 			{
-				if (strcmp(layerName, layerProperties.layerName) == 0)
+				if(strcmp(layerName, layerProperties.layerName) == 0)
 				{
 					layerFound = true;
 					break;
