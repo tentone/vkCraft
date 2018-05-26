@@ -97,7 +97,6 @@ private:
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
-
 	std::vector<VkImageView> swapChainImageViews;
 
 	//Initialize GLFW window
@@ -130,6 +129,9 @@ private:
 
 		//Image views
 		createImageViews();
+
+		//Graphics pipeline
+		createGraphicsPipeline();
 	}
 	
 	//Logic loop
@@ -150,7 +152,6 @@ private:
 		}
 
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
-
 		vkDestroyDevice(device, nullptr);
 
 		if (enableValidationLayers)
@@ -415,6 +416,11 @@ private:
 				throw std::runtime_error("failed to create image views!");
 			}
 		}
+	}
+
+	void createGraphicsPipeline()
+	{
+
 	}
 
 	//Check if a device has all the required capabilities (is a discrete GPU and supports geometry shading).
