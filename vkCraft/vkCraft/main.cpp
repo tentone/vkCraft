@@ -10,6 +10,10 @@
 #include <set>
 #include <fstream>
 
+const int WIDTH = 1024;
+const int HEIGHT = 640;
+const int MAX_FRAMES_IN_FLIGHT = 1;
+
 const std::vector<const char*> validationLayers =
 {
 	"VK_LAYER_LUNARG_standard_validation"
@@ -21,7 +25,6 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<const char*> deviceExtensions =
 {
@@ -124,7 +127,7 @@ private:
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-		window = glfwCreateWindow(800, 600, "VkCraft", nullptr, nullptr);
+		window = glfwCreateWindow(WIDTH, HEIGHT, "VkCraft", nullptr, nullptr);
 	}
 	
 	//Initialize vulkan
@@ -227,7 +230,7 @@ private:
 	{
 		if(enableValidationLayers && !checkValidationLayerSupport())
 		{
-			throw std::runtime_error("vkCraft: Validation layers requested are not available!");
+			throw std::runtime_error("vkCraft: Validation layers requested are not available");
 		}
 
 		VkApplicationInfo appInfo = {};
@@ -265,7 +268,7 @@ private:
 
 		if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to create vulkan instance!");
+			throw std::runtime_error("vkCraft: Failed to create vulkan instance");
 		}
 
 		//Check extensions available
@@ -297,7 +300,7 @@ private:
 
 		if (CreateDebugReportCallbackEXT(instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to set up debug callback!");
+			throw std::runtime_error("vkCraft: Failed to set up debug callback");
 		}
 	}
 
@@ -318,7 +321,7 @@ private:
 
 		if(deviceCount == 0)
 		{
-			throw std::runtime_error("vkCraft: Not GPU with Vulkan support found!");
+			throw std::runtime_error("vkCraft: Not GPU with Vulkan support found");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -335,7 +338,7 @@ private:
 
 		if(physicalDevice == VK_NULL_HANDLE)
 		{
-			throw std::runtime_error("vkCraft: Could not find a suitable GPU!");
+			throw std::runtime_error("vkCraft: Could not find a suitable GPU");
 		}
 	}
 
@@ -380,7 +383,7 @@ private:
 
 		if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to create the logical device!");
+			throw std::runtime_error("vkCraft: Failed to create the logical device");
 		}
 
 		vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
@@ -435,7 +438,7 @@ private:
 
 		if(vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to create swap chain!");
+			throw std::runtime_error("vkCraft: Failed to create swap chain");
 		}
 
 		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
@@ -446,6 +449,7 @@ private:
 		swapChainExtent = extent;
 	}
 	
+	//Create image views
 	void createImageViews()
 	{
 		swapChainImageViews.resize(swapChainImages.size());
@@ -469,12 +473,57 @@ private:
 
 			if(vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("vkCraft: Failed to create image views!");
+				throw std::runtime_error("vkCraft: Failed to create image views");
 			}
 		}
 	}
 
-	//Initializer graphics pipeline, load shaders
+	//Create render pass (indicates where to read and write rendered data)
+	void createRenderPass()
+	{
+		VkAttachmentDescription colorAttachment = {};
+		colorAttachment.format = swapChainImageFormat;
+		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentReference colorAttachmentRef = {};
+		colorAttachmentRef.attachment = 0;
+		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		VkSubpassDescription subpass = {};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &colorAttachmentRef;
+
+		VkSubpassDependency dependency = {};
+		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependency.dstSubpass = 0;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcAccessMask = 0;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		VkRenderPassCreateInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		renderPassInfo.attachmentCount = 1;
+		renderPassInfo.pAttachments = &colorAttachment;
+		renderPassInfo.subpassCount = 1;
+		renderPassInfo.pSubpasses = &subpass;
+		renderPassInfo.dependencyCount = 1;
+		renderPassInfo.pDependencies = &dependency;
+
+		if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+		{
+			throw std::runtime_error("vkCraft: Failed to create render pass");
+		}
+	}
+
+	//Initializer graphics pipeline, load shaders, configure vertex format and rendering steps
 	void createGraphicsPipeline()
 	{
 		std::vector<char> vertShaderCode = readFile("shaders/vert.spv");
@@ -589,7 +638,7 @@ private:
 
 		if(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to create pipeline layout!");
+			throw std::runtime_error("vkCraft: Failed to create pipeline layout");
 		}
 
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
@@ -609,13 +658,14 @@ private:
 
 		if(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to create graphics pipeline!");
+			throw std::runtime_error("vkCraft: Failed to create graphics pipeline");
 		}
 
 		vkDestroyShaderModule(device, fragShaderModule, nullptr);
 		vkDestroyShaderModule(device, vertShaderModule, nullptr);
 	}
 
+	//Create frame buffers for the swap chain
 	void createFramebuffers()
 	{
 		swapChainFramebuffers.resize(swapChainImageViews.size());
@@ -638,53 +688,8 @@ private:
 
 			if(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("vkCraft: Failed to create framebuffer!");
+				throw std::runtime_error("vkCraft: Failed to create framebuffer");
 			}
-		}
-	}
-
-	//Create render pass (indicates where to read and write rendered data)
-	void createRenderPass()
-	{
-		VkAttachmentDescription colorAttachment = {};
-		colorAttachment.format = swapChainImageFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference colorAttachmentRef = {};
-		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass = {};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &colorAttachmentRef;
-
-		VkSubpassDependency dependency = {};
-		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		VkRenderPassCreateInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachment;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpass;
-		renderPassInfo.dependencyCount = 1;
-		renderPassInfo.pDependencies = &dependency;
-
-		if(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
-		{
-			throw std::runtime_error("vkCraft: Failed to create render pass!");
 		}
 	}
 
@@ -695,11 +700,10 @@ private:
 		VkCommandPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
-		poolInfo.flags = 0; // Optional
 
 		if(vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to create command pool!");
+			throw std::runtime_error("vkCraft: Failed to create command pool");
 		}
 	}
 
@@ -716,7 +720,7 @@ private:
 
 		if(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to allocate command buffers!");
+			throw std::runtime_error("vkCraft: Failed to allocate command buffers");
 		}
 
 		for(size_t i = 0; i < commandBuffers.size(); i++)
@@ -728,7 +732,7 @@ private:
 
 			if(vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
 			{
-				throw std::runtime_error("vkCraft: Failed to begin recording command buffer!");
+				throw std::runtime_error("vkCraft: Failed to begin recording command buffer");
 			}
 			
 			//Render initialization
@@ -752,7 +756,7 @@ private:
 
 			if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("vkCraft: Failed to record command buffer!");
+				throw std::runtime_error("vkCraft: Failed to record command buffer");
 			}
 		}
 	}
@@ -762,6 +766,7 @@ private:
 	{
 		imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 		renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -776,7 +781,7 @@ private:
 				vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS || 
 				vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("vkCraft: Failed to create semaphores and fences!");
+				throw std::runtime_error("vkCraft: Failed to create semaphores and fences");
 			}
 		}
 	}
@@ -813,7 +818,7 @@ private:
 		//Submit render request to queue
 		if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to submit draw command buffer!");
+			throw std::runtime_error("vkCraft: Failed to submit draw command buffer");
 		}
 
 		//Present info (waits for signal semaphore)
@@ -846,7 +851,7 @@ private:
 
 		if(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		{
-			throw std::runtime_error("vkCraft: Failed to create shader module!");
+			throw std::runtime_error("vkCraft: Failed to create shader module");
 		}
 
 		return shaderModule;
@@ -952,7 +957,7 @@ private:
 		}
 		else
 		{
-			VkExtent2D actualExtent = {800, 600};
+			VkExtent2D actualExtent = {WIDTH, HEIGHT};
 
 			actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
 			actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
@@ -1051,7 +1056,7 @@ private:
 
 		if(!file.is_open())
 		{
-			throw std::runtime_error("vkCraft: Failed to open file!");
+			throw std::runtime_error("vkCraft: Failed to open file");
 		}
 
 		size_t fileSize = (size_t)file.tellg();
