@@ -141,7 +141,7 @@ private:
 		createRenderPass();
 
 		//Graphics pipeline
-		//createGraphicsPipeline();
+		createGraphicsPipeline();
 			
 		//Framebuffers
 		//createFramebuffers();
@@ -467,7 +467,9 @@ private:
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		vertexInputInfo.vertexBindingDescriptionCount = 0;
+		vertexInputInfo.pVertexBindingDescriptions = nullptr;
 		vertexInputInfo.vertexAttributeDescriptionCount = 0;
+		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 			
 		//How to asssembly vertex data
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
@@ -486,7 +488,7 @@ private:
 		
 		//Scissor
 		VkRect2D scissor = {};
-		scissor.offset = { 0, 0 };
+		scissor.offset = {0, 0};
 		scissor.extent = swapChainExtent;
 
 		//Combines multiple viewports and scissors
@@ -556,7 +558,7 @@ private:
 			throw std::runtime_error("Failed to create pipeline layout!");
 		}
 
-		VkGraphicsPipelineCreateInfo pipelineInfo = {};
+		/*VkGraphicsPipelineCreateInfo pipelineInfo = {};
 		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
 		pipelineInfo.pViewportState = &viewportState;
@@ -572,7 +574,7 @@ private:
 		if(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create graphics pipeline!");
-		}
+		}*/
 
 		vkDestroyShaderModule(device, fragShaderModule, nullptr);
 		vkDestroyShaderModule(device, vertShaderModule, nullptr);
