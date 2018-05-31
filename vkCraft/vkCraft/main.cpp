@@ -21,6 +21,8 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 const std::vector<const char*> deviceExtensions =
 {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -52,13 +54,6 @@ void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT
 	}
 }
 
-struct SwapChainSupportDetails
-{
-	VkSurfaceCapabilitiesKHR capabilities;
-	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR> presentModes;
-};
-
 struct QueueFamilyIndices
 {
 	int graphicsFamily = -1;
@@ -68,6 +63,13 @@ struct QueueFamilyIndices
 	{
 		return graphicsFamily >= 0 && presentFamily >= 0;
 	}
+};
+
+struct SwapChainSupportDetails
+{
+	VkSurfaceCapabilitiesKHR capabilities;
+	std::vector<VkSurfaceFormatKHR> formats;
+	std::vector<VkPresentModeKHR> presentModes;
 };
 
 //Main class
@@ -110,9 +112,11 @@ private:
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
 
-	//Syncronization semaphores
-	VkSemaphore imageAvailableSemaphore;
-	VkSemaphore renderFinishedSemaphore;
+	//Syncronization semaphores (one for each concurrent frame)
+	std::vector<VkSemaphore> imageAvailableSemaphores;
+	std::vector<VkSemaphore> renderFinishedSemaphores;
+	std::vector<VkFence> inFlightFences;
+	size_t currentFrame = 0;
 
 	//Initialize GLFW window
 	void initWindow()
@@ -159,7 +163,7 @@ private:
 		createCommandBuffers();
 
 		//Semaphores
-		createSemaphores();
+		createSyncObjects();
 	}
 	
 	//Logic loop
@@ -170,64 +174,25 @@ private:
 			glfwPollEvents();
 			drawFrame();
 		}
-
-		vkDeviceWaitIdle(device);
-	}
-
-	void drawFrame()
-	{
-		//Render next image and set image available semaphore down
-		uint32_t imageIndex;
-		vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
-		
-		//Create list of semaphores to wait for and signal to
-		VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
-		VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
-
-		//Wait stages
-		VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-		
-		//Submit information (wich semaphores to wait for, wait stages etc)
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-
-		//Submit render request to queue
-		if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
-		{
-			throw std::runtime_error("vkCraft: Failed to submit draw command buffer!");
-		}
-
-		VkPresentInfoKHR presentInfo = {};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-
-		VkSwapchainKHR swapChains[] = {swapChain};
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-		presentInfo.pImageIndices = &imageIndex;
-		presentInfo.pResults = nullptr; // Optional
-
-		vkQueuePresentKHR(presentQueue, &presentInfo);
 	}
 
 	//Cleanup memory
 	void cleanup()
 	{
-		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
-		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+		//Wait for the device to idle before cleaning up
+		vkDeviceWaitIdle(device);
+
+		//Semaphores
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+			vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+			vkDestroyFence(device, inFlightFences[i], nullptr);
+		}
 
 		vkDestroyCommandPool(device, commandPool, nullptr);
 
-		for(auto framebuffer : swapChainFramebuffers)
+		for (auto framebuffer : swapChainFramebuffers)
 		{
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
 		}
@@ -237,7 +202,7 @@ private:
 
 		vkDestroyRenderPass(device, renderPass, nullptr);
 
-		for(auto imageView : swapChainImageViews)
+		for (auto imageView : swapChainImageViews)
 		{
 			vkDestroyImageView(device, imageView, nullptr);
 		}
@@ -262,7 +227,7 @@ private:
 	{
 		if(enableValidationLayers && !checkValidationLayerSupport())
 		{
-			throw std::runtime_error("Validation layers requested, but not available!");
+			throw std::runtime_error("vkCraft: Validation layers requested are not available!");
 		}
 
 		VkApplicationInfo appInfo = {};
@@ -300,7 +265,7 @@ private:
 
 		if(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to create vulkan instance!");
+			throw std::runtime_error("vkCraft: Failed to create vulkan instance!");
 		}
 
 		//Check extensions available
@@ -332,7 +297,7 @@ private:
 
 		if (CreateDebugReportCallbackEXT(instance, &createInfo, nullptr, &callback) != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to set up debug callback!");
+			throw std::runtime_error("vkCraft: Failed to set up debug callback!");
 		}
 	}
 
@@ -341,7 +306,7 @@ private:
 	{
 		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to create window surface");
+			throw std::runtime_error("vkCraft: Failed to create window surface");
 		}
 	}
 
@@ -353,7 +318,7 @@ private:
 
 		if(deviceCount == 0)
 		{
-			throw std::runtime_error("Not GPU with Vulkan support found!");
+			throw std::runtime_error("vkCraft: Not GPU with Vulkan support found!");
 		}
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -370,7 +335,7 @@ private:
 
 		if(physicalDevice == VK_NULL_HANDLE)
 		{
-			throw std::runtime_error("Could not find a suitable GPU!");
+			throw std::runtime_error("vkCraft: Could not find a suitable GPU!");
 		}
 	}
 
@@ -415,7 +380,7 @@ private:
 
 		if(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to create the logical device!");
+			throw std::runtime_error("vkCraft: Failed to create the logical device!");
 		}
 
 		vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
@@ -470,7 +435,7 @@ private:
 
 		if(vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to create swap chain!");
+			throw std::runtime_error("vkCraft: Failed to create swap chain!");
 		}
 
 		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
@@ -504,7 +469,7 @@ private:
 
 			if(vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("failed to create image views!");
+				throw std::runtime_error("vkCraft: Failed to create image views!");
 			}
 		}
 	}
@@ -624,7 +589,7 @@ private:
 
 		if(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to create pipeline layout!");
+			throw std::runtime_error("vkCraft: Failed to create pipeline layout!");
 		}
 
 		VkGraphicsPipelineCreateInfo pipelineInfo = {};
@@ -644,7 +609,7 @@ private:
 
 		if(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to create graphics pipeline!");
+			throw std::runtime_error("vkCraft: Failed to create graphics pipeline!");
 		}
 
 		vkDestroyShaderModule(device, fragShaderModule, nullptr);
@@ -673,7 +638,7 @@ private:
 
 			if(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("Failed to create framebuffer!");
+				throw std::runtime_error("vkCraft: Failed to create framebuffer!");
 			}
 		}
 	}
@@ -719,7 +684,7 @@ private:
 
 		if(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to create render pass!");
+			throw std::runtime_error("vkCraft: Failed to create render pass!");
 		}
 	}
 
@@ -734,7 +699,7 @@ private:
 
 		if(vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to create command pool!");
+			throw std::runtime_error("vkCraft: Failed to create command pool!");
 		}
 	}
 
@@ -751,7 +716,7 @@ private:
 
 		if(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to allocate command buffers!");
+			throw std::runtime_error("vkCraft: Failed to allocate command buffers!");
 		}
 
 		for(size_t i = 0; i < commandBuffers.size(); i++)
@@ -763,7 +728,7 @@ private:
 
 			if(vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
 			{
-				throw std::runtime_error("Failed to begin recording command buffer!");
+				throw std::runtime_error("vkCraft: Failed to begin recording command buffer!");
 			}
 			
 			//Render initialization
@@ -787,21 +752,86 @@ private:
 
 			if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
 			{
-				throw std::runtime_error("Failed to record command buffer!");
+				throw std::runtime_error("vkCraft: Failed to record command buffer!");
 			}
 		}
 	}
 
-	//Create syncronization semaphores
-	void createSemaphores()
+	//Create syncronization semaphores and fences
+	void createSyncObjects()
 	{
+		imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-		if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS || vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
+		VkFenceCreateInfo fenceInfo = {};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			throw std::runtime_error("Failed to create semaphores!");
+			if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+				vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS || 
+				vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
+			{
+				throw std::runtime_error("vkCraft: Failed to create semaphores and fences!");
+			}
 		}
+	}
+
+	//Draw frame to the swap chain and display it
+	void drawFrame()
+	{
+		//Wait for fences before starting to draw a frame
+		vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+		vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
+		//Render next image and set image available semaphore down
+		uint32_t imageIndex;
+		vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+		//Create list of semaphores to wait for and signal to
+		VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+		VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+
+		//Wait stages
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+		//Submit information (wich semaphores to wait for, wait stages etc)
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		//Submit render request to queue
+		if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("vkCraft: Failed to submit draw command buffer!");
+		}
+
+		//Present info (waits for signal semaphore)
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+
+		VkSwapchainKHR swapChains[] = { swapChain };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &imageIndex;
+		presentInfo.pResults = nullptr;
+
+		//Present the frame
+		vkQueuePresentKHR(presentQueue, &presentInfo);
+
+		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
 	//Create a shader from SPIR-V code
@@ -816,7 +846,7 @@ private:
 
 		if(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to create shader module!");
+			throw std::runtime_error("vkCraft: Failed to create shader module!");
 		}
 
 		return shaderModule;
@@ -1021,7 +1051,7 @@ private:
 
 		if(!file.is_open())
 		{
-			throw std::runtime_error("Failed to open file!");
+			throw std::runtime_error("vkCraft: Failed to open file!");
 		}
 
 		size_t fileSize = (size_t)file.tellg();
