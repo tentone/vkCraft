@@ -169,6 +169,19 @@ private:
 		createSyncObjects();
 	}
 	
+	void recreateSwapChain()
+	{
+		vkDeviceWaitIdle(device);
+
+		cleanupSwapChain();
+		createSwapChain();
+		createImageViews();
+		createRenderPass();
+		createGraphicsPipeline();
+		createFramebuffers();
+		createCommandBuffers();
+	}
+
 	//Logic loop
 	void mainLoop()
 	{
@@ -179,22 +192,8 @@ private:
 		}
 	}
 
-	//Cleanup memory
-	void cleanup()
+	void cleanupSwapChain()
 	{
-		//Wait for the device to idle before cleaning up
-		vkDeviceWaitIdle(device);
-
-		//Semaphores
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-			vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-			vkDestroyFence(device, inFlightFences[i], nullptr);
-		}
-
-		vkDestroyCommandPool(device, commandPool, nullptr);
-
 		for (auto framebuffer : swapChainFramebuffers)
 		{
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -211,9 +210,28 @@ private:
 		}
 
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
+	}
+
+	//Cleanup memory
+	void cleanup()
+	{
+		//Wait for the device to idle before cleaning up
+		vkDeviceWaitIdle(device);
+		
+		cleanupSwapChain();
+
+		//Semaphores
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+			vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+			vkDestroyFence(device, inFlightFences[i], nullptr);
+		}
+
+		vkDestroyCommandPool(device, commandPool, nullptr);
 		vkDestroyDevice(device, nullptr);
 
-		if (enableValidationLayers)
+		if(enableValidationLayers)
 		{
 			DestroyDebugReportCallbackEXT(instance, callback, nullptr);
 		}
@@ -795,7 +813,17 @@ private:
 
 		//Render next image and set image available semaphore down
 		uint32_t imageIndex;
-		vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+		if(result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			recreateSwapChain();
+			return;
+		}
+		else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			throw std::runtime_error("vkCraft: Failed to acquire swap chain image!");
+		}
 
 		//Create list of semaphores to wait for and signal to
 		VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
@@ -834,7 +862,16 @@ private:
 		presentInfo.pResults = nullptr;
 
 		//Present the frame
-		vkQueuePresentKHR(presentQueue, &presentInfo);
+		result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+		if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		{
+			recreateSwapChain();
+		}
+		else if(result != VK_SUCCESS)
+		{
+			throw std::runtime_error("vkCraft: Failed to present swap chain image!");
+		}
 
 		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
