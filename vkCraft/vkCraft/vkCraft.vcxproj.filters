@@ -11,4 +11,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CommandBufferUtils.h" />
+  </ItemGroup>
 </Project>
