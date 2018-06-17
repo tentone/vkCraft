@@ -5,6 +5,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -180,6 +183,10 @@ private:
 	VkBuffer uniformBuffer;
 	VkDeviceMemory uniformBufferMemory;
 
+	//Texture data
+	VkImage textureImage;
+	VkDeviceMemory textureImageMemory;
+
 	//Descriptors
 	VkDescriptorPool descriptorPool;
 	VkDescriptorSet descriptorSet;
@@ -195,7 +202,7 @@ private:
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		window = glfwCreateWindow(WIDTH, HEIGHT, "VkCraft", nullptr, nullptr);
 	}
 	
@@ -234,6 +241,9 @@ private:
 		//Command pool
 		createCommandPool();
 		
+		//Texture data
+		createTextureImage();
+
 		//Buffers
 		createVertexBuffer();
 		createIndexBuffer();
@@ -656,6 +666,7 @@ private:
 		uboLayoutBinding.binding = 0;
 		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uboLayoutBinding.descriptorCount = 1;
+		uboLayoutBinding.pImmutableSamplers = nullptr;
 		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
@@ -739,7 +750,7 @@ private:
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
 		//Antialiasing (multisampling)
@@ -782,6 +793,7 @@ private:
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
 		if(vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
@@ -997,6 +1009,79 @@ private:
 		vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 	}
 
+	//Create texture image
+	void createTextureImage()
+	{
+		int texWidth, texHeight, texChannels;
+
+		//Load image
+		stbi_uc* pixels = stbi_load("texture/uv.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+		if(!pixels)
+		{
+			throw std::runtime_error("vkCraft: Failed to load texture image!");
+		}
+		
+		//Create buffer to transfer to GPU memory
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+		//Copy data directly to GPU memory
+		void* data;
+		vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+		memcpy(data, pixels, static_cast<size_t>(imageSize));
+
+		//Clear stagging buffer and image data
+		vkUnmapMemory(device, stagingBufferMemory);
+		stbi_image_free(pixels);
+
+		//Create vulkan image
+		createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+	}
+
+	//Create vulkan image and allocate memory for it
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+	{
+		//Create a vulkan image with metadata
+		VkImageCreateInfo imageInfo = {};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageInfo.extent.width = width;
+		imageInfo.extent.height = height;
+		imageInfo.extent.depth = 1;
+		imageInfo.mipLevels = 1;
+		imageInfo.arrayLayers = 1;
+		imageInfo.format = format;
+		imageInfo.tiling = tiling;
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		imageInfo.usage = usage;
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if(vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
+		{
+			throw std::runtime_error("vkCraft: Failed to create image!");
+		}
+
+		//Allocate memory for the texture
+		VkMemoryRequirements memRequirements;
+		vkGetImageMemoryRequirements(device, image, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+		if(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
+		{
+			throw std::runtime_error("vkCraft: Failed to allocate image memory!");
+		}
+
+		vkBindImageMemory(device, image, imageMemory, 0);
+	}
+
 	//Generic buffer creation
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 	{
@@ -1053,7 +1138,7 @@ private:
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+		allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
 
 		if(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
 		{
@@ -1065,7 +1150,6 @@ private:
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-			beginInfo.pInheritanceInfo = nullptr; // Optional
 
 			if(vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
 			{
@@ -1145,11 +1229,10 @@ private:
 		UniformBufferObject ubo = {};
 		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		//ubo.proj = glm::perspective(glm::radians(60.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
-		ubo.proj = glm::perspectiveRH(glm::radians(60.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+		ubo.proj = glm::perspective(glm::radians(60.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 
 		//Fix Y direction from OpenGL to Vulkan
-		//ubo.proj[1][1] *= -1;
+		ubo.proj[1][1] *= -1;
 
 		void* data;
 		vkMapMemory(device, uniformBufferMemory, 0, sizeof(ubo), 0, &data);
