@@ -53,7 +53,8 @@ struct Vertex
 	glm::vec3 color;
 	glm::vec2 texCoord;
 
-	static VkVertexInputBindingDescription getBindingDescription() {
+	static VkVertexInputBindingDescription getBindingDescription()
+	{
 		VkVertexInputBindingDescription bindingDescription = {};
 		bindingDescription.binding = 0;
 		bindingDescription.stride = sizeof(Vertex);
@@ -62,7 +63,8 @@ struct Vertex
 		return bindingDescription;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions()
+	{
 		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
 
         attributeDescriptions[0].binding = 0;
@@ -1079,7 +1081,6 @@ private:
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = image;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		barrier.subresourceRange.baseMipLevel = 0;
 		barrier.subresourceRange.levelCount = 1;
 		barrier.subresourceRange.baseArrayLayer = 0;
@@ -1404,10 +1405,6 @@ private:
 			throw std::runtime_error("vkCraft: Failed to allocate command buffers");
 		}
 
-		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-		clearValues[1].depthStencil = {1.0f, 0};
-
 		for(size_t i = 0; i < commandBuffers.size(); i++)
 		{
 			VkCommandBufferBeginInfo beginInfo = {};
@@ -1418,7 +1415,11 @@ private:
 			{
 				throw std::runtime_error("vkCraft: Failed to begin recording command buffer");
 			}
-			
+
+			std::array<VkClearValue, 2> clearValues = {};
+			clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
 			//Render initialization
 			VkRenderPassBeginInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1428,11 +1429,6 @@ private:
 			renderPassInfo.renderArea.extent = swapChainExtent;
 			renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 			renderPassInfo.pClearValues = clearValues.data();
-
-			//Clear color
-			VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-			renderPassInfo.clearValueCount = 1;
-			renderPassInfo.pClearValues = &clearColor;
 
 			//Start rendering
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
