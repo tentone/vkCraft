@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BoxGeometry.cpp" />
     <ClCompile Include="DebugCallbackHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="QueueFamilyIndices.cpp" />
