@@ -43,21 +43,19 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-const int WIDTH = 1024;
-const int HEIGHT = 640;
 const int MAX_FRAMES_IN_FLIGHT = 1;
 
 //Vertex data
 const std::vector<Vertex> vertices = {
 	{ { -0.5f, -0.5f, 0.0f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
-{ { 0.5f, -0.5f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
-{ { 0.5f, 0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-{ { -0.5f, 0.5f, 0.0f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
+	{ { 0.5f, -0.5f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
+	{ { 0.5f, 0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
+	{ { -0.5f, 0.5f, 0.0f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
 
-{ { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
-{ { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
-{ { 0.5f, 0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-{ { -0.5f, 0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } }
+	{ { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
+	{ { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
+	{ { 0.5f, 0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
+	{ { -0.5f, 0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } }
 };
 
 const std::vector<uint16_t> indices = {
@@ -103,7 +101,7 @@ public:
 		cleanup();
 	}
 private:
-	GLFWwindow * window;
+	GLFWwindow *window;
 
 	VkInstance instance;
 	VkDebugReportCallbackEXT callback;
@@ -170,7 +168,7 @@ private:
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-		window = glfwCreateWindow(WIDTH, HEIGHT, "VkCraft", nullptr, nullptr);
+		window = glfwCreateWindow(1024, 600, "VkCraft", nullptr, nullptr);
 	}
 
 	//Initialize vulkan
@@ -411,7 +409,7 @@ private:
 	//Setup debug callback
 	void setupDebugCallback()
 	{
-		if (!enableValidationLayers)
+		if(!enableValidationLayers)
 		{
 			return;
 		}
@@ -430,7 +428,7 @@ private:
 	//Create a window surface using GLFW
 	void createSurface()
 	{
-		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
+		if(glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
 		{
 			throw std::runtime_error("vkCraft: Failed to create window surface");
 		}
@@ -1574,18 +1572,6 @@ private:
 	//Check if a device has all the required capabilities (is a discrete GPU and supports geometry shading).
 	bool isDeviceSuitable(VkPhysicalDevice device)
 	{
-		/*
-		//Properties
-		VkPhysicalDeviceProperties deviceProperties;
-		vkGetPhysicalDeviceProperties(device, &deviceProperties);
-
-		//Features
-		VkPhysicalDeviceFeatures deviceFeatures;
-		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-		return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && deviceFeatures.geometryShader;
-		*/
-
 		QueueFamilyIndices indices = findQueueFamilies(device);
 
 		//Check device extensions
@@ -1675,8 +1661,10 @@ private:
 		}
 		else
 		{
-			VkExtent2D actualExtent = { WIDTH, HEIGHT };
-
+			int width, height;
+			glfwGetWindowSize(window, &width, &height);
+			VkExtent2D actualExtent = {width, height};
+			
 			actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
 			actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
 

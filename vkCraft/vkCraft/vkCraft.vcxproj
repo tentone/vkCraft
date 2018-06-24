@@ -19,12 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DebugCallbackHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="QueueFamilyIndices.cpp" />
     <ClCompile Include="SwapChainSupportDetails.cpp" />
     <ClCompile Include="UniformBufferObject.cpp" />
     <ClCompile Include="Vertex.cpp" />
-    <ClCompile Include="VkCraft.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

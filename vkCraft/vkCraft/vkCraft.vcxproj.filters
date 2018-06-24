@@ -16,13 +16,13 @@
     <ClCompile Include="UniformBufferObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkCraft.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SwapChainSupportDetails.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QueueFamilyIndices.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugCallbackHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
