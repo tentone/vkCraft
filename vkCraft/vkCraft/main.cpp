@@ -26,7 +26,8 @@
 #include "SwapChainSupportDetails.cpp"
 #include "Vertex.cpp"
 #include "UniformBufferObject.cpp"
-#include "DebugCallbackHandler.cpp"
+
+#include "BoxGeometry.cpp"
 
 const std::vector<const char*> validationLayers =
 {
@@ -45,23 +46,6 @@ const bool enableValidationLayers = true;
 #endif
 
 const int MAX_FRAMES_IN_FLIGHT = 1;
-
-//Vertex data
-const std::vector<Vertex> vertices = {
-	{ { -0.5f, -0.5f, 0.0f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
-	{ { 0.5f, -0.5f, 0.0f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
-	{ { 0.5f, 0.5f, 0.0f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-	{ { -0.5f, 0.5f, 0.0f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } },
-	{ { -0.5f, -0.5f, -0.5f },{ 1.0f, 0.0f, 0.0f },{ 0.0f, 0.0f } },
-	{ { 0.5f, -0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f },{ 1.0f, 0.0f } },
-	{ { 0.5f, 0.5f, -0.5f },{ 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },
-	{ { -0.5f, 0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f },{ 0.0f, 1.0f } }
-};
-
-const std::vector<uint16_t> indices = {
-	0, 1, 2, 2, 3, 0,
-	4, 5, 6, 6, 7, 4
-};
 
 //Declare the debug report extension
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
@@ -95,12 +79,16 @@ class VkCraft
 public:
 	void run()
 	{
+		geometry.generate();
+
 		initWindow();
 		initVulkan();
 		mainLoop();
 		cleanup();
 	}
 private:
+	BoxGeometry geometry;
+
 	GLFWwindow *window;
 
 	VkInstance instance;
@@ -870,7 +858,7 @@ private:
 	//Create vertex buffer
 	void createVertexBuffer()
 	{
-		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+		VkDeviceSize bufferSize = sizeof(geometry.vertices[0]) * geometry.vertices.size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -878,7 +866,7 @@ private:
 
 		void* data;
 		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, vertices.data(), (size_t)bufferSize);
+		memcpy(data, geometry.vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
 		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
@@ -894,7 +882,7 @@ private:
 	//Create index buffer
 	void createIndexBuffer()
 	{
-		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+		VkDeviceSize bufferSize = sizeof(geometry.indices[0]) * geometry.indices.size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -902,7 +890,7 @@ private:
 
 		void* data;
 		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, indices.data(), (size_t)bufferSize);
+		memcpy(data, geometry.indices.data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
 		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
@@ -1383,7 +1371,7 @@ private:
 
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry.indices.size()), 1, 0, 0, 0);
 
 			//End rendering
 			vkCmdEndRenderPass(commandBuffers[i]);

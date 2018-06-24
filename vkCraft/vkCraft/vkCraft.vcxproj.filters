@@ -25,10 +25,10 @@
     <ClCompile Include="QueueFamilyIndices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DebugCallbackHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BoxGeometry.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
       <Filter>Source Files\geometry</Filter>
     </ClCompile>
   </ItemGroup>
