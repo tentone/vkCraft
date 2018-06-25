@@ -27,6 +27,7 @@
 #include "Vertex.cpp"
 #include "UniformBufferObject.cpp"
 
+#include "PlaneGeometry.cpp"
 #include "BoxGeometry.cpp"
 
 const std::vector<const char*> validationLayers =
