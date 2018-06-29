@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxGeometry.cpp" />
+    <ClCompile Include="DeviceUtils.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PlaneGeometry.cpp" />

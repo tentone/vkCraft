@@ -96,21 +96,22 @@ private:
 	VkDebugReportCallbackEXT callback;
 	VkSurfaceKHR surface;
 
+	//DEVICE HANDLER CLASS
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkDevice device;
 
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
 
+	//SWAP CHAIN HANDLER CLASS
 	VkSwapchainKHR swapChain;
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
 	std::vector<VkImageView> swapChainImageViews;
+	std::vector<VkFramebuffer> swapChainFramebuffers;
 
 	VkRenderPass renderPass;
-
-	std::vector<VkFramebuffer> swapChainFramebuffers;
 
 	VkPipelineLayout pipelineLayout;
 	VkDescriptorSetLayout descriptorSetLayout;
@@ -1419,8 +1420,9 @@ private:
 
 		UniformBufferObject ubo = {};
 		ubo.model = glm::scale(glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(2.0f, 2.0f, 2.0f));
-		ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.proj = glm::perspective(glm::radians(60.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+		ubo.view = glm::lookAt(glm::vec3(2.0f, 10.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		ubo.proj = glm::perspective(glm::radians(60.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 
 		//Fix Y direction from OpenGL to Vulkan
 		ubo.proj[1][1] *= -1;
