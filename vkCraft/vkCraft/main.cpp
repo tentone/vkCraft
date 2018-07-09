@@ -6,6 +6,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -25,6 +26,8 @@
 #include "QueueFamilyIndices.cpp"
 #include "SwapChainSupportDetails.cpp"
 #include "Vertex.cpp"
+#include "Object3D.cpp"
+#include "Camera.cpp"
 #include "UniformBufferObject.cpp"
 
 #include "PlaneGeometry.cpp"
@@ -126,6 +129,8 @@ private:
 	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
+
+	//Uniform buffer
 	VkBuffer uniformBuffer;
 	VkDeviceMemory uniformBufferMemory;
 
@@ -459,7 +464,7 @@ private:
 		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-		std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
+		std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
 
 		float queuePriority = 1.0f;
 		for (int queueFamily : uniqueQueueFamilies)
@@ -1410,26 +1415,33 @@ private:
 		}
 	}
 
+	//Object3D and camera
+	Object3D model;
+	Camera camera;
+
 	//Update the uniform buffers (and run some logic)
 	void updateUniformBuffer()
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
-
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-		UniformBufferObject ubo = {};
-		ubo.model = glm::scale(glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(2.0f, 2.0f, 2.0f));
-		ubo.view = glm::lookAt(glm::vec3(2.0f, 10.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		model.position.x = cos(time);
+		model.rotation.y = time;
+		model.updateMatrix();
 
-		ubo.proj = glm::perspective(glm::radians(60.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+		camera.position.z = 5;
+		camera.updateMatrix();
+		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
 
-		//Fix Y direction from OpenGL to Vulkan
-		ubo.proj[1][1] *= -1;
+		UniformBufferObject uniformBuf;
+		uniformBuf.model = model.matrix;
+		uniformBuf.view = camera.matrix;
+		uniformBuf.projection = camera.projection;
 
 		void* data;
-		vkMapMemory(device, uniformBufferMemory, 0, sizeof(ubo), 0, &data);
-		memcpy(data, &ubo, sizeof(ubo));
+		vkMapMemory(device, uniformBufferMemory, 0, sizeof(uniformBuf), 0, &data);
+		memcpy(data, &uniformBuf, sizeof(uniformBuf));
 		vkUnmapMemory(device, uniformBufferMemory);
 	}
 
@@ -1643,7 +1655,7 @@ private:
 		return bestMode;
 	}
 
-	//Choose resolution of the swap chain images
+	//Choose resolution of the swap chain images (get it from the window size)
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 	{
 		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
@@ -1654,8 +1666,8 @@ private:
 		{
 			int width, height;
 			glfwGetWindowSize(window, &width, &height);
+
 			VkExtent2D actualExtent = {width, height};
-			
 			actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
 			actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
 

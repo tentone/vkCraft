@@ -25,7 +25,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PlaneGeometry.cpp" />
     <ClCompile Include="QueueFamilyIndices.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="SwapChainSupportDetails.cpp" />
+    <ClCompile Include="Object3D.cpp" />
     <ClCompile Include="UniformBufferObject.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
