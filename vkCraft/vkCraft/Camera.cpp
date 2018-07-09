@@ -36,6 +36,7 @@ public:
 	{
 		aspect = width / height;
 		projection = glm::perspective(glm::radians(fov), aspect, near, far);
+
 		//Fix Y direction from OpenGL to Vulkan
 		projection[1][1] *= -1;
 	}

@@ -11,9 +11,6 @@
     <Filter Include="Source Files\objects">
       <UniqueIdentifier>{2ce81be3-fb41-412b-800e-d228d9e18960}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\buffers">
-      <UniqueIdentifier>{ed47c39f-c30b-46d9-9cb3-9e9cee71a652}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\device">
       <UniqueIdentifier>{8dde39b7-0996-4784-9c75-47c06aea19cf}</UniqueIdentifier>
     </Filter>

@@ -164,6 +164,17 @@ private:
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		window = glfwCreateWindow(1024, 600, "VkCraft", nullptr, nullptr);
+		
+		//Disable the mouse cursor
+		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		
+		//GLFW cursor callback
+		/*
+		glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos)
+		{
+		std::cout << "x:" << xpos << " y:" << ypos << std::endl;
+		});
+		*/
 	}
 
 	//Initialize vulkan
@@ -253,8 +264,8 @@ private:
 		while (!glfwWindowShouldClose(window))
 		{
 			glfwPollEvents();
-			updateUniformBuffer();
-			drawFrame();
+			update();
+			render();
 		}
 
 		vkDeviceWaitIdle(device);
@@ -1418,19 +1429,35 @@ private:
 	//Object3D and camera
 	Object3D model;
 	Camera camera;
-
+	
 	//Update the uniform buffers (and run some logic)
-	void updateUniformBuffer()
+	void update()
 	{
-		static auto startTime = std::chrono::high_resolution_clock::now();
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		double time = glfwGetTime();
 
 		model.position.x = cos(time);
-		model.rotation.y = time;
+
+		//model.rotation.y = time;
+		if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		{
+			model.rotation.y -= 0.001;
+		}
+		if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		{
+			model.rotation.y += 0.001;
+		}
+
 		model.updateMatrix();
 
 		camera.position.z = 5;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		{
+			camera.rotation.y -= 0.001;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			camera.rotation.y += 0.001;
+		}
 		camera.updateMatrix();
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
 
@@ -1446,7 +1473,7 @@ private:
 	}
 
 	//Draw frame to the swap chain and display it
-	void drawFrame()
+	void render()
 	{
 		//Wait for fences before starting to draw a frame
 		vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
