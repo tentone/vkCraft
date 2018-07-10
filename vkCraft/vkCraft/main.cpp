@@ -124,12 +124,6 @@ private:
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
 
-	//Vertex data
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
-
 	//Uniform buffer
 	VkBuffer uniformBuffer;
 	VkDeviceMemory uniformBufferMemory;
@@ -323,11 +317,7 @@ private:
 		vkDestroyBuffer(device, uniformBuffer, nullptr);
 		vkFreeMemory(device, uniformBufferMemory, nullptr);
 
-		vkDestroyBuffer(device, vertexBuffer, nullptr);
-		vkFreeMemory(device, vertexBufferMemory, nullptr);
-
-		vkDestroyBuffer(device, indexBuffer, nullptr);
-		vkFreeMemory(device, indexBufferMemory, nullptr);
+		geometry.dispose(device);
 
 		//Semaphores
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -887,10 +877,10 @@ private:
 		memcpy(data, geometry.vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry.vertexBuffer, geometry.vertexBufferMemory);
 
 		//Copy from CPU memory buffer to GPU memory buffer
-		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+		copyBuffer(stagingBuffer, geometry.vertexBuffer, bufferSize);
 
 		//Clean the stagging (CPU) buffer
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
@@ -911,9 +901,9 @@ private:
 		memcpy(data, geometry.indices.data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry.indexBuffer, geometry.indexBufferMemory);
 
-		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+		copyBuffer(stagingBuffer, geometry.indexBuffer, bufferSize);
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -1382,10 +1372,10 @@ private:
 
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-			VkBuffer vertexBuffers[] = { vertexBuffer };
+			VkBuffer vertexBuffers[] = { geometry.vertexBuffer };
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-			vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+			vkCmdBindIndexBuffer(commandBuffers[i], geometry.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
@@ -1435,28 +1425,28 @@ private:
 	{
 		double time = glfwGetTime();
 
-		model.position.x = cos(time);
+		model.position.x = (float)cos(time);
 
 		//model.rotation.y = time;
 		if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 		{
-			model.rotation.y -= 0.001;
+			model.rotation.y -= 0.001f;
 		}
 		if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 		{
-			model.rotation.y += 0.001;
+			model.rotation.y += 0.001f;
 		}
 
 		model.updateMatrix();
 
-		camera.position.z = 5;
+		camera.position.z = 5.0f;
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
-			camera.rotation.y -= 0.001;
+			camera.rotation.y -= 0.001f;
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
-			camera.rotation.y += 0.001;
+			camera.rotation.y += 0.001f;
 		}
 		camera.updateMatrix();
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);

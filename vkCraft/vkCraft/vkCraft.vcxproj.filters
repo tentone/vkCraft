@@ -11,11 +11,14 @@
     <Filter Include="Source Files\objects">
       <UniqueIdentifier>{2ce81be3-fb41-412b-800e-d228d9e18960}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\device">
-      <UniqueIdentifier>{8dde39b7-0996-4784-9c75-47c06aea19cf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\math">
       <UniqueIdentifier>{194d02e8-cda6-4631-a4e7-c92b20d23ea8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{8dde39b7-0996-4784-9c75-47c06aea19cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\texture">
+      <UniqueIdentifier>{6ebe4f5b-ace3-477c-ad6c-5b6582d9f0eb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -34,14 +37,11 @@
     <ClCompile Include="Object3D.cpp">
       <Filter>Source Files\objects</Filter>
     </ClCompile>
-    <ClCompile Include="DeviceUtils.cpp">
-      <Filter>Source Files\device</Filter>
-    </ClCompile>
     <ClCompile Include="SwapChainSupportDetails.cpp">
-      <Filter>Source Files\device</Filter>
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
     <ClCompile Include="QueueFamilyIndices.cpp">
-      <Filter>Source Files\device</Filter>
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
     <ClCompile Include="Vertex.cpp">
       <Filter>Source Files\math</Filter>
@@ -51,6 +51,18 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="DeviceManager.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="BufferUtils.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryUtils.cpp">
+      <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

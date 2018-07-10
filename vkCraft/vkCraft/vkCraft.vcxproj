@@ -20,14 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxGeometry.cpp" />
-    <ClCompile Include="DeviceUtils.cpp" />
+    <ClCompile Include="BufferUtils.cpp" />
+    <ClCompile Include="DeviceManager.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MemoryUtils.cpp" />
     <ClCompile Include="PlaneGeometry.cpp" />
     <ClCompile Include="QueueFamilyIndices.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="SwapChainSupportDetails.cpp" />
     <ClCompile Include="Object3D.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UniformBufferObject.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
