@@ -194,36 +194,31 @@ private:
 	//Object3D and camera
 	Object3D model;
 	FirstPersonCamera camera;
+	double time, delta;
 
 	//Update the uniform buffers (and run some logic)
 	void update()
 	{
-		double time = glfwGetTime();
+		double actual = glfwGetTime();
+		delta = actual - time;
+		time = actual;
 
 		model.position.x = (float)cos(time);
 
 		//model.rotation.y = time;
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
-			model.rotation.y -= 0.001f;
+			model.rotation.y -= 0.0001f;
 		}
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
 		{
-			model.rotation.y += 0.001f;
+			model.rotation.y += 0.0001f;
 		}
 
 		model.updateMatrix();
-
-		camera.position.z = 5.0f;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		{
-			camera.rotation.y -= 0.001f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		{
-			camera.rotation.y += 0.001f;
-		}
-		camera.updateMatrix();
+			
+		//Update first person camera
+		camera.update(window, delta);
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
 
 		UniformBufferObject uniformBuf;
@@ -1479,7 +1474,7 @@ private:
 			vkCmdBindIndexBuffer(commandBuffers[i], geometry->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-
+			
 			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry->indices.size()), 1, 0, 0, 0);
 
 			//End rendering
