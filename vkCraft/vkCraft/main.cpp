@@ -23,6 +23,7 @@
 #include <array>
 #include <set>
 
+#include "Device.cpp"
 #include "QueueFamilyIndices.cpp"
 #include "SwapChainSupportDetails.cpp"
 #include "Vertex.cpp"
@@ -100,9 +101,10 @@ private:
 	VkSurfaceKHR surface;
 
 	//DEVICE HANDLER CLASS
-	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	VkPhysicalDevice physical = VK_NULL_HANDLE;
 	VkDevice device;
 
+	//GRAPHICS QUEUE CLASS
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
 
@@ -124,18 +126,20 @@ private:
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
 
+	//OBJECT DATA START
 	//Uniform buffer
 	VkBuffer uniformBuffer;
 	VkDeviceMemory uniformBufferMemory;
 
+	//MERGE INTO SINGLE CLASS
 	//Texture data
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;
-
-	//Texture view
 	VkImageView textureImageView;
-	VkSampler textureSampler;
 
+	//Texture sampler
+	VkSampler textureSampler;
+	
 	//Depth buffer
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
@@ -268,7 +272,7 @@ private:
 	//Cleanup swapchain elements
 	void cleanupSwapChain()
 	{
-		//Depth buffer
+		//Depth buffer data
 		vkDestroyImageView(device, depthImageView, nullptr);
 		vkDestroyImage(device, depthImage, nullptr);
 		vkFreeMemory(device, depthImageMemory, nullptr);
@@ -303,8 +307,10 @@ private:
 		//Clean swap chain
 		cleanupSwapChain();
 
-		//Texture
+		//Texture sampler
 		vkDestroySampler(device, textureSampler, nullptr);
+
+		//Texture data
 		vkDestroyImageView(device, textureImageView, nullptr);
 		vkDestroyImage(device, textureImage, nullptr);
 		vkFreeMemory(device, textureImageMemory, nullptr);
@@ -448,12 +454,12 @@ private:
 		{
 			if (isDeviceSuitable(device))
 			{
-				physicalDevice = device;
+				physical = device;
 				break;
 			}
 		}
 
-		if (physicalDevice == VK_NULL_HANDLE)
+		if (physical == VK_NULL_HANDLE)
 		{
 			throw std::runtime_error("vkCraft: Could not find a suitable GPU");
 		}
@@ -462,7 +468,7 @@ private:
 	//Create a logical device
 	void createLogicalDevice()
 	{
-		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+		QueueFamilyIndices indices = findQueueFamilies(physical);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 		std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
@@ -499,7 +505,7 @@ private:
 			createInfo.enabledLayerCount = 0;
 		}
 
-		if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
+		if (vkCreateDevice(physical, &createInfo, nullptr, &device) != VK_SUCCESS)
 		{
 			throw std::runtime_error("vkCraft: Failed to create the logical device");
 		}
@@ -510,7 +516,7 @@ private:
 
 	void createSwapChain()
 	{
-		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
+		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physical);
 
 		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
 		VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -532,7 +538,7 @@ private:
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+		QueueFamilyIndices indices = findQueueFamilies(physical);
 		uint32_t queueFamilyIndices[] = { (uint32_t)indices.graphicsFamily, (uint32_t)indices.presentFamily };
 
 		if (indices.graphicsFamily != indices.presentFamily)
@@ -851,7 +857,7 @@ private:
 
 	void createCommandPool()
 	{
-		QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+		QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physical);
 
 		VkCommandPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -1264,7 +1270,7 @@ private:
 		for (VkFormat format : candidates)
 		{
 			VkFormatProperties props;
-			vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+			vkGetPhysicalDeviceFormatProperties(physical, format, &props);
 
 			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
 			{
@@ -1313,7 +1319,7 @@ private:
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(physical, &memProperties);
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
 		{

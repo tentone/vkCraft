@@ -52,16 +52,10 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files\objects</Filter>
     </ClCompile>
-    <ClCompile Include="DeviceManager.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="BufferUtils.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files\texture</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryUtils.cpp">
+    <ClCompile Include="Device.cpp">
       <Filter>Source Files\utils</Filter>
     </ClCompile>
   </ItemGroup>

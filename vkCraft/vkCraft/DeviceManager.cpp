@@ -1,6 +1,6 @@
 #pragma once
 
-class DeviceUtils
+class DeviceManager
 {
 public:
 	//TODO
