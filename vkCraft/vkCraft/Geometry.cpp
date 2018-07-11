@@ -6,6 +6,9 @@
 class Geometry
 {
 public:
+	//Geometry mode (vertex or indexed)
+
+
 	//Vertex
 	std::vector<Vertex> vertices;
 	VkBuffer vertexBuffer;
@@ -16,8 +19,10 @@ public:
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 
-	void generate(){}
+	//Method to generate the geometry index and vertex data
+	virtual void generate(){}
 
+	//Create 
 	void createBuffers(VkDevice device)
 	{
 		//TODO

@@ -26,13 +26,17 @@
 #include "Device.cpp"
 #include "QueueFamilyIndices.cpp"
 #include "SwapChainSupportDetails.cpp"
-#include "Vertex.cpp"
-#include "Object3D.cpp"
-#include "Camera.cpp"
+
 #include "UniformBufferObject.cpp"
+#include "Texture.cpp"
+#include "FileUtils.cpp"
+
+#include "Object3D.cpp"
+#include "FirstPersonCamera.cpp"
 
 #include "PlaneGeometry.cpp"
 #include "BoxGeometry.cpp"
+#include "ChunkGeometry.cpp"
 
 const std::vector<const char*> validationLayers =
 {
@@ -82,17 +86,21 @@ void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT
 class VkCraft
 {
 public:
+	VkCraft()
+	{
+		geometry = new BoxGeometry();
+		geometry->generate();
+	}
+
 	void run()
 	{
-		geometry.generate();
-
 		initWindow();
 		initVulkan();
 		mainLoop();
 		cleanup();
 	}
 private:
-	BoxGeometry geometry;
+	Geometry *geometry;
 
 	GLFWwindow *window;
 
@@ -120,7 +128,6 @@ private:
 
 	VkPipelineLayout pipelineLayout;
 	VkDescriptorSetLayout descriptorSetLayout;
-
 	VkPipeline graphicsPipeline;
 
 	VkCommandPool commandPool;
@@ -132,18 +139,13 @@ private:
 	VkDeviceMemory uniformBufferMemory;
 
 	//MERGE INTO SINGLE CLASS
-	//Texture data
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
-	VkImageView textureImageView;
+	Texture texture;
 
 	//Texture sampler
 	VkSampler textureSampler;
-	
+
 	//Depth buffer
-	VkImage depthImage;
-	VkDeviceMemory depthImageMemory;
-	VkImageView depthImageView;
+	Texture depth;
 
 	//Descriptors
 	VkDescriptorPool descriptorPool;
@@ -162,10 +164,10 @@ private:
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		window = glfwCreateWindow(1024, 600, "VkCraft", nullptr, nullptr);
-		
+
 		//Disable the mouse cursor
 		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		
+
 		//GLFW cursor callback
 		/*
 		glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos)
@@ -174,6 +176,139 @@ private:
 		});
 		*/
 	}
+
+	//Logic loop
+	void mainLoop()
+	{
+		while (!glfwWindowShouldClose(window))
+		{
+			glfwPollEvents();
+			update();
+			render();
+		}
+
+		vkDeviceWaitIdle(device);
+	}
+
+
+	//Object3D and camera
+	Object3D model;
+	FirstPersonCamera camera;
+
+	//Update the uniform buffers (and run some logic)
+	void update()
+	{
+		double time = glfwGetTime();
+
+		model.position.x = (float)cos(time);
+
+		//model.rotation.y = time;
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		{
+			model.rotation.y -= 0.001f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		{
+			model.rotation.y += 0.001f;
+		}
+
+		model.updateMatrix();
+
+		camera.position.z = 5.0f;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		{
+			camera.rotation.y -= 0.001f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		{
+			camera.rotation.y += 0.001f;
+		}
+		camera.updateMatrix();
+		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
+
+		UniformBufferObject uniformBuf;
+		uniformBuf.model = model.matrix;
+		uniformBuf.view = camera.matrix;
+		uniformBuf.projection = camera.projection;
+
+		void* data;
+		vkMapMemory(device, uniformBufferMemory, 0, sizeof(uniformBuf), 0, &data);
+		memcpy(data, &uniformBuf, sizeof(uniformBuf));
+		vkUnmapMemory(device, uniformBufferMemory);
+	}
+
+	//Draw frame to the swap chain and display it
+	void render()
+	{
+		//Wait for fences before starting to draw a frame
+		vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+		vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
+		//Render next image and set image available semaphore down
+		uint32_t imageIndex;
+		VkResult result = vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			recreateSwapChain();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			throw std::runtime_error("vkCraft: Failed to acquire swap chain image!");
+		}
+
+		//Create list of semaphores to wait for and signal to
+		VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+		VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
+
+		//Wait stages
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+		//Submit information (wich semaphores to wait for, wait stages etc)
+		VkSubmitInfo submitInfo = {};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		//Submit render request to queue
+		if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("vkCraft: Failed to submit draw command buffer");
+		}
+
+		//Present info (waits for signal semaphore)
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+
+		VkSwapchainKHR swapChains[] = { swapChain };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &imageIndex;
+		presentInfo.pResults = nullptr;
+
+		//Present the frame
+		result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		{
+			recreateSwapChain();
+		}
+		else if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("vkCraft: Failed to present swap chain image!");
+		}
+
+		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	}
+
 
 	//Initialize vulkan
 	void initVulkan()
@@ -214,13 +349,13 @@ private:
 		createFramebuffers();
 
 		//Texture data
-		createTextureImage();
-		createTextureImageView();
-		createTextureSampler();
+		createTextureImage("texture/uv.png");
+		texture.createSampler(&device, &textureSampler);
 
 		//Buffers
 		createVertexBuffer();
 		createIndexBuffer();
+
 		createUniformBuffer();
 
 		//Descriptors
@@ -256,26 +391,13 @@ private:
 		createCommandBuffers();
 	}
 
-	//Logic loop
-	void mainLoop()
-	{
-		while (!glfwWindowShouldClose(window))
-		{
-			glfwPollEvents();
-			update();
-			render();
-		}
-
-		vkDeviceWaitIdle(device);
-	}
-
 	//Cleanup swapchain elements
 	void cleanupSwapChain()
 	{
 		//Depth buffer data
-		vkDestroyImageView(device, depthImageView, nullptr);
-		vkDestroyImage(device, depthImage, nullptr);
-		vkFreeMemory(device, depthImageMemory, nullptr);
+		vkDestroyImageView(device, depth.imageView, nullptr);
+		vkDestroyImage(device, depth.image, nullptr);
+		vkFreeMemory(device, depth.imageMemory, nullptr);
 
 		for (auto framebuffer : swapChainFramebuffers)
 		{
@@ -311,9 +433,9 @@ private:
 		vkDestroySampler(device, textureSampler, nullptr);
 
 		//Texture data
-		vkDestroyImageView(device, textureImageView, nullptr);
-		vkDestroyImage(device, textureImage, nullptr);
-		vkFreeMemory(device, textureImageMemory, nullptr);
+		vkDestroyImageView(device, texture.imageView, nullptr);
+		vkDestroyImage(device, texture.image, nullptr);
+		vkFreeMemory(device, texture.imageMemory, nullptr);
 
 		//Descriptors
 		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -323,7 +445,7 @@ private:
 		vkDestroyBuffer(device, uniformBuffer, nullptr);
 		vkFreeMemory(device, uniformBufferMemory, nullptr);
 
-		geometry.dispose(device);
+		geometry->dispose(device);
 
 		//Semaphores
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -411,7 +533,7 @@ private:
 	//Setup debug callback
 	void setupDebugCallback()
 	{
-		if(!enableValidationLayers)
+		if (!enableValidationLayers)
 		{
 			return;
 		}
@@ -430,7 +552,7 @@ private:
 	//Create a window surface using GLFW
 	void createSurface()
 	{
-		if(glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
+		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
 		{
 			throw std::runtime_error("vkCraft: Failed to create window surface");
 		}
@@ -471,7 +593,7 @@ private:
 		QueueFamilyIndices indices = findQueueFamilies(physical);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-		std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
+		std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
 
 		float queuePriority = 1.0f;
 		for (int queueFamily : uniqueQueueFamilies)
@@ -679,8 +801,8 @@ private:
 	//Initializer graphics pipeline, load shaders, configure vertex format and rendering steps
 	void createGraphicsPipeline()
 	{
-		std::vector<char> vertShaderCode = readFile("shaders/vert.spv");
-		std::vector<char> fragShaderCode = readFile("shaders/frag.spv");
+		std::vector<char> vertShaderCode = FileUtils::readFile("shaders/vert.spv");
+		std::vector<char> fragShaderCode = FileUtils::readFile("shaders/frag.spv");
 
 		VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -837,7 +959,7 @@ private:
 
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
-			std::array<VkImageView, 2> attachments = { swapChainImageViews[i], depthImageView };
+			std::array<VkImageView, 2> attachments = { swapChainImageViews[i], depth.imageView };
 
 			VkFramebufferCreateInfo framebufferInfo = {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -872,7 +994,7 @@ private:
 	//Create vertex buffer
 	void createVertexBuffer()
 	{
-		VkDeviceSize bufferSize = sizeof(geometry.vertices[0]) * geometry.vertices.size();
+		VkDeviceSize bufferSize = sizeof(geometry->vertices[0]) * geometry->vertices.size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -880,13 +1002,13 @@ private:
 
 		void* data;
 		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, geometry.vertices.data(), (size_t)bufferSize);
+		memcpy(data, geometry->vertices.data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry.vertexBuffer, geometry.vertexBufferMemory);
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->vertexBuffer, geometry->vertexBufferMemory);
 
 		//Copy from CPU memory buffer to GPU memory buffer
-		copyBuffer(stagingBuffer, geometry.vertexBuffer, bufferSize);
+		copyBuffer(stagingBuffer, geometry->vertexBuffer, bufferSize);
 
 		//Clean the stagging (CPU) buffer
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
@@ -896,7 +1018,7 @@ private:
 	//Create index buffer
 	void createIndexBuffer()
 	{
-		VkDeviceSize bufferSize = sizeof(geometry.indices[0]) * geometry.indices.size();
+		VkDeviceSize bufferSize = sizeof(geometry->indices[0]) * geometry->indices.size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -904,12 +1026,12 @@ private:
 
 		void* data;
 		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, geometry.indices.data(), (size_t)bufferSize);
+		memcpy(data, geometry->indices.data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry.indexBuffer, geometry.indexBufferMemory);
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->indexBuffer, geometry->indexBufferMemory);
 
-		copyBuffer(stagingBuffer, geometry.indexBuffer, bufferSize);
+		copyBuffer(stagingBuffer, geometry->indexBuffer, bufferSize);
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -976,7 +1098,7 @@ private:
 
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = textureImageView;
+		imageInfo.imageView = texture.imageView;
 		imageInfo.sampler = textureSampler;
 
 		std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
@@ -1103,12 +1225,12 @@ private:
 	}
 
 	//Create texture image (move to ImageUtils)
-	void createTextureImage()
+	void createTextureImage(const char *fname)
 	{
 		int texWidth, texHeight, texChannels;
 
 		//Load image
-		stbi_uc* pixels = stbi_load("texture/uv.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		stbi_uc* pixels = stbi_load(fname, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 		VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 		if (!pixels)
@@ -1131,50 +1253,23 @@ private:
 		stbi_image_free(pixels);
 
 		//Create vulkan image
-		createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+		createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, texture.image, texture.imageMemory);
 
 		//Transition the texture image to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-		transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		transitionImageLayout(texture.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 		//Copy the staging buffer to the texture image
-		copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+		copyBufferToImage(stagingBuffer, texture.image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
 
 		//Prepare texture for shader access
-		transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		transitionImageLayout(texture.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		//Clean staging buffers
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
-	}
 
-	//Create texture view
-	void createTextureImageView()
-	{
-		textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-	}
-
-	//Create texture sampler (for shader access)
-	void createTextureSampler()
-	{
-		VkSamplerCreateInfo samplerInfo = {};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.anisotropyEnable = VK_TRUE;
-		samplerInfo.maxAnisotropy = 16;
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-
-		if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS)
-		{
-			throw std::runtime_error("vkCraft: Failed to create texture sampler!");
-		}
+		//Create texture view
+		texture.imageView = createImageView(texture.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	//Create image view (generic) (move to ImageViewUtils maybe)
@@ -1246,10 +1341,10 @@ private:
 	{
 		VkFormat depthFormat = findDepthFormat();
 
-		createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-		depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+		createImage(swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depth.image, depth.imageMemory);
+		depth.imageView = createImageView(depth.image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-		transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		transitionImageLayout(depth.image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 	}
 
 	//Check if the format for depth buffer has a stencil component
@@ -1378,14 +1473,14 @@ private:
 
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-			VkBuffer vertexBuffers[] = { geometry.vertexBuffer };
+			VkBuffer vertexBuffers[] = { geometry->vertexBuffer };
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-			vkCmdBindIndexBuffer(commandBuffers[i], geometry.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffers[i], geometry->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry.indices.size()), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry->indices.size()), 1, 0, 0, 0);
 
 			//End rendering
 			vkCmdEndRenderPass(commandBuffers[i]);
@@ -1420,124 +1515,6 @@ private:
 				throw std::runtime_error("vkCraft: Failed to create semaphores and fences");
 			}
 		}
-	}
-
-	//Object3D and camera
-	Object3D model;
-	Camera camera;
-	
-	//Update the uniform buffers (and run some logic)
-	void update()
-	{
-		double time = glfwGetTime();
-
-		model.position.x = (float)cos(time);
-
-		//model.rotation.y = time;
-		if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		{
-			model.rotation.y -= 0.001f;
-		}
-		if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		{
-			model.rotation.y += 0.001f;
-		}
-
-		model.updateMatrix();
-
-		camera.position.z = 5.0f;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		{
-			camera.rotation.y -= 0.001f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		{
-			camera.rotation.y += 0.001f;
-		}
-		camera.updateMatrix();
-		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
-
-		UniformBufferObject uniformBuf;
-		uniformBuf.model = model.matrix;
-		uniformBuf.view = camera.matrix;
-		uniformBuf.projection = camera.projection;
-
-		void* data;
-		vkMapMemory(device, uniformBufferMemory, 0, sizeof(uniformBuf), 0, &data);
-		memcpy(data, &uniformBuf, sizeof(uniformBuf));
-		vkUnmapMemory(device, uniformBufferMemory);
-	}
-
-	//Draw frame to the swap chain and display it
-	void render()
-	{
-		//Wait for fences before starting to draw a frame
-		vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
-		vkResetFences(device, 1, &inFlightFences[currentFrame]);
-
-		//Render next image and set image available semaphore down
-		uint32_t imageIndex;
-		VkResult result = vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR)
-		{
-			recreateSwapChain();
-			return;
-		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-		{
-			throw std::runtime_error("vkCraft: Failed to acquire swap chain image!");
-		}
-
-		//Create list of semaphores to wait for and signal to
-		VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
-		VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
-
-		//Wait stages
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-
-		//Submit information (wich semaphores to wait for, wait stages etc)
-		VkSubmitInfo submitInfo = {};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-		//Submit render request to queue
-		if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("vkCraft: Failed to submit draw command buffer");
-		}
-
-		//Present info (waits for signal semaphore)
-		VkPresentInfoKHR presentInfo = {};
-		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-
-		VkSwapchainKHR swapChains[] = { swapChain };
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-		presentInfo.pImageIndices = &imageIndex;
-		presentInfo.pResults = nullptr;
-
-		//Present the frame
-		result = vkQueuePresentKHR(presentQueue, &presentInfo);
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-		{
-			recreateSwapChain();
-		}
-		else if (result != VK_SUCCESS)
-		{
-			throw std::runtime_error("vkCraft: Failed to present swap chain image!");
-		}
-
-		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
 	//Begin a single time use command buffer (Move to CommandBufferUtils)
@@ -1690,7 +1667,7 @@ private:
 			int width, height;
 			glfwGetWindowSize(window, &width, &height);
 
-			VkExtent2D actualExtent = {width, height};
+			VkExtent2D actualExtent = { width, height };
 			actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
 			actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
@@ -1781,26 +1758,6 @@ private:
 		return extensions;
 	}
 
-	//Read file to char vector
-	static std::vector<char> readFile(const std::string& filename)
-	{
-		std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-		if (!file.is_open())
-		{
-			throw std::runtime_error("vkCraft: Failed to open file");
-		}
-
-		size_t fileSize = (size_t)file.tellg();
-		std::vector<char> buffer(fileSize);
-
-		file.seekg(0);
-		file.read(buffer.data(), fileSize);
-		file.close();
-
-		return buffer;
-	}
-
 	//Check if validation layers are supported
 	bool checkValidationLayerSupport()
 	{
@@ -1849,7 +1806,7 @@ int main()
 	{
 		app.run();
 	}
-	catch(const std::runtime_error &error)
+	catch (const std::runtime_error &error)
 	{
 		std::cerr << error.what() << std::endl;
 		return EXIT_FAILURE;

@@ -11,14 +11,14 @@
     <Filter Include="Source Files\objects">
       <UniqueIdentifier>{2ce81be3-fb41-412b-800e-d228d9e18960}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\math">
-      <UniqueIdentifier>{194d02e8-cda6-4631-a4e7-c92b20d23ea8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\utils">
-      <UniqueIdentifier>{8dde39b7-0996-4784-9c75-47c06aea19cf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\texture">
       <UniqueIdentifier>{6ebe4f5b-ace3-477c-ad6c-5b6582d9f0eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{95ce4320-55c0-46e0-a484-029a9fefd6d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\renderer">
+      <UniqueIdentifier>{194d02e8-cda6-4631-a4e7-c92b20d23ea8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -37,17 +37,8 @@
     <ClCompile Include="Object3D.cpp">
       <Filter>Source Files\objects</Filter>
     </ClCompile>
-    <ClCompile Include="SwapChainSupportDetails.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="QueueFamilyIndices.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
     <ClCompile Include="Vertex.cpp">
-      <Filter>Source Files\math</Filter>
-    </ClCompile>
-    <ClCompile Include="UniformBufferObject.cpp">
-      <Filter>Source Files\objects</Filter>
+      <Filter>Source Files\renderer</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files\objects</Filter>
@@ -55,8 +46,23 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files\texture</Filter>
     </ClCompile>
-    <ClCompile Include="Device.cpp">
+    <ClCompile Include="FileUtils.cpp">
       <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkGeometry.cpp">
+      <Filter>Source Files\geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="UniformBufferObject.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="QueueFamilyIndices.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="SwapChainSupportDetails.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="FirstPersonCamera.cpp">
+      <Filter>Source Files\objects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
