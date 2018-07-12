@@ -74,7 +74,7 @@ public:
 		}
 		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
 		{
-			position.y += moveSpeed;
+			position.y -= moveSpeed;
 		}
 
 		double x, y;
