@@ -20,7 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BoxGeometry.cpp" />
+    <ClCompile Include="BufferUtils.cpp" />
     <ClCompile Include="ChunkGeometry.cpp" />
+    <ClCompile Include="Device.cpp" />
     <ClCompile Include="FileUtils.cpp" />
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Geometry.cpp" />
