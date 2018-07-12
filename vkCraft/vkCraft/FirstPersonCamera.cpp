@@ -1,11 +1,14 @@
 #pragma once
 
+#include <iostream>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -14,15 +17,32 @@
 class FirstPersonCamera : public Camera
 {
 public:
+	/**
+	 * Camera orientation vector, x is horizontal orientation and y is vertical orientation.
+	 */
 	glm::vec2 orientation;
 
-	void update(GLFWwindow *window, float time = 0.01f)
+	/**
+	 * Stores last mouse position.
+	 */
+	glm::vec2 last;
+	
+	/**
+	 * Mouse movement delta.
+	 */
+	glm::vec2 delta;
+
+	/**
+	 * Update the camera movement from user input.
+	 */
+	void update(GLFWwindow *window, double time)
 	{
 		float moveSpeed = 2.0f * time;
-		float lookSpeed = 1.0f * time;
-		float pi = 3.14f;
-		float pid2 = 1.57f;
+		float lookSpeed = 2.0f * time;
 
+		float pi = 3.14159265359f;
+		float pid2 = pi / 2.0f;
+		
 		//Camera move
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
@@ -48,17 +68,25 @@ public:
 			position.x -= moveSpeed * std::sin(lateral);
 		}
 
-		//Get cursor position
-		//glfwGetCursorPos
+		//Update mouse cursor
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+		delta.x = x - last.x;
+		delta.y = y - last.y;
+		last.x = x;
+		last.y = y;
 
+		orientation.x += delta.x * lookSpeed;
+		orientation.y += delta.y * lookSpeed;
+		
 		//Camera orientation
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		{
-			orientation.x -= lookSpeed;
-		}
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		{
 			orientation.x += lookSpeed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		{
+			orientation.x -= lookSpeed;
 		}
 		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		{
@@ -69,29 +97,31 @@ public:
 			orientation.y -= lookSpeed;
 		}
 		
-		//Limit vertical orientation
-		if(orientation.y < -1.57)
-		{
-			orientation.y = -1.57;
-		}
-		else if(orientation.y > 1.57)
-		{
-			orientation.y = 1.57;
-		}
+		//std::cout << "Hor:" << orientation.x << " Ver:" << orientation.y << std::endl;
 
-		//Calculate camera orientation
-		float cos = std::cos(orientation.y);
-		glm::vec3 direction = glm::vec3(std::sin(orientation.x + pi) * cos, std::sin(orientation.y), std::cos(orientation.x + pi) * cos);
-		direction += position;
-		//lookAtDirection(direction);
+		//Limit vertical orientation
+		if(orientation.y < -1.57f)
+		{
+			orientation.y = -1.57f;
+		}
+		else if(orientation.y > 1.57f)
+		{
+			orientation.y = 1.57f;
+		}
 		
 		updateMatrix();
 	}
 
-	void lookAtDirection(glm::vec3 direction)
+	/**
+	 * Update the camera matrix.
+	 * 
+	 * Consider the camera orientation and translation only.
+	 */
+	void updateMatrix()
 	{
-		//this.inverseTransformationMatrix.lookAt(this.position, direction, Camera.UP);
-		//this.inverseTransformationMatrix.setPosition(this.position);
-		//this.transformationMatrix.getInverse(this.inverseTransformationMatrix);
-	};
+		matrix = glm::translate(glm::mat4(), position);
+		matrix = glm::rotate(matrix, orientation.x, glm::vec3(0.0f, 1.0f, 0.0f));
+		matrix = glm::rotate(matrix, orientation.y, glm::vec3(1.0f, 0.0f, 0.0f));
+		matrix = glm::inverse(matrix);
+	}
 };

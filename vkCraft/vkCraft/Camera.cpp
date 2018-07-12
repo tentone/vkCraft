@@ -22,7 +22,7 @@ public:
 		far = _far;
 	}
 
-	void updateMatrix()
+	void virtual updateMatrix()
 	{
 		matrix = glm::translate(glm::mat4(), position);
 		matrix = glm::rotate(matrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));

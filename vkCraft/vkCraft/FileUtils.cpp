@@ -7,7 +7,6 @@
 class FileUtils
 {
 public:
-
 	//Read file to char vector
 	static std::vector<char> readFile(const std::string& filename)
 	{
