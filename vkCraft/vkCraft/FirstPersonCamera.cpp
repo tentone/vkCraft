@@ -68,7 +68,15 @@ public:
 			position.x -= moveSpeed * std::sin(lateral);
 		}
 
-		//Update mouse cursor
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		{
+			position.y += moveSpeed;
+		}
+		if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+		{
+			position.y += moveSpeed;
+		}
+
 		double x, y;
 		glfwGetCursorPos(window, &x, &y);
 		delta.x = x - last.x;
@@ -76,15 +84,19 @@ public:
 		last.x = x;
 		last.y = y;
 
-		orientation.x += delta.x * lookSpeed;
-		orientation.y += delta.y * lookSpeed;
-		
+		//Update mouse cursor
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+		{
+			orientation.x -= delta.x * lookSpeed;
+			orientation.y -= delta.y * lookSpeed;
+		}
+
 		//Camera orientation
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 		{
 			orientation.x += lookSpeed;
 		}
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		{
 			orientation.x -= lookSpeed;
 		}
