@@ -109,7 +109,6 @@ private:
 
 	//Error handler
 	VkDebugReportCallbackEXT callback;
-	
 
 	Device device;
 
@@ -320,6 +319,8 @@ private:
 
 		//Pick a device
 		pickPhysicalDevice();
+		
+		/*
 		createLogicalDevice();
 
 		//Create swap chain
@@ -363,6 +364,7 @@ private:
 
 		//Semaphores
 		createSyncObjects();
+		*/
 	}
 
 	void recreateSwapChain()
@@ -570,7 +572,7 @@ private:
 
 		for (const auto& dev : devices)
 		{
-			if (isDeviceSuitable(dev))
+			if (isPhysicalDeviceSuitable(dev))
 			{
 				device.physical = dev;
 				break;
@@ -586,7 +588,7 @@ private:
 	//Create a logical device
 	void createLogicalDevice()
 	{
-		QueueFamilyIndices indices = findQueueFamilies(device.physical);
+		QueueFamilyIndices indices = device.getQueueFamilyIndices(surface);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 		std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
@@ -656,7 +658,7 @@ private:
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		QueueFamilyIndices indices = findQueueFamilies(device.physical);
+		QueueFamilyIndices indices = device.getQueueFamilyIndices(surface);
 		uint32_t queueFamilyIndices[] = { (uint32_t)indices.graphicsFamily, (uint32_t)indices.presentFamily };
 
 		if (indices.graphicsFamily != indices.presentFamily)
@@ -975,7 +977,7 @@ private:
 
 	void createCommandPool()
 	{
-		QueueFamilyIndices queueFamilyIndices = findQueueFamilies(device.physical);
+		QueueFamilyIndices queueFamilyIndices = device.getQueueFamilyIndices(surface);
 
 		VkCommandPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -1522,36 +1524,37 @@ private:
 	}
 
 	//Check if a device has all the required capabilities (is a discrete GPU and supports geometry shading).
-	bool isDeviceSuitable(VkPhysicalDevice device)
+	bool isPhysicalDeviceSuitable(VkPhysicalDevice physical)
 	{
-		QueueFamilyIndices indices = findQueueFamilies(device);
-
 		//Check device extensions
-		bool extensionsSupported = checkDeviceExtensionSupport(device);
+		bool extensionsSupported = checkDeviceExtensionSupport(physical);
 
 		//Check swap chain
 		bool swapChainAdequate = false;
 		if (extensionsSupported)
 		{
-			SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+			SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physical);
 			swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 		}
 
 		//Device device.physical features
 		VkPhysicalDeviceFeatures supportedFeatures;
-		vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+		vkGetPhysicalDeviceFeatures(physical, &supportedFeatures);
+		
+		//Get queue family indices
+		QueueFamilyIndices indices = device.getQueueFamilyIndices(surface);
 
 		return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 	}
 
 	//Check available device extensions
-	bool checkDeviceExtensionSupport(VkPhysicalDevice device)
+	bool checkDeviceExtensionSupport(VkPhysicalDevice physical)
 	{
 		uint32_t extensionCount;
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+		vkEnumerateDeviceExtensionProperties(physical, nullptr, &extensionCount, nullptr);
 
 		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+		vkEnumerateDeviceExtensionProperties(physical, nullptr, &extensionCount, availableExtensions.data());
 
 		std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
@@ -1625,69 +1628,31 @@ private:
 	}
 
 	//Check compatible swap chain support for our device
-	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device)
+	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice physical)
 	{
 		SwapChainSupportDetails details;
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical, surface, &details.capabilities);
 
 		//Check format modes
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physical, surface, &formatCount, nullptr);
 		if (formatCount != 0)
 		{
 			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(physical, surface, &formatCount, details.formats.data());
 		}
 
 		//Check presentation modes
-		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+		uint32_t presentModeCount; 
+		vkGetPhysicalDeviceSurfacePresentModesKHR(physical, surface, &presentModeCount, nullptr);
 		if (presentModeCount != 0)
 		{
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(physical, surface, &presentModeCount, details.presentModes.data());
 		}
 
 		return details;
-	}
-
-	//Check which queue families are supported by the device (we only need it to support graphics rendering)
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
-	{
-		QueueFamilyIndices indices;
-
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-		int i = 0;
-		for (const auto& queueFamily : queueFamilies)
-		{
-			if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			{
-				indices.graphicsFamily = i;
-			}
-
-			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-
-			if (queueFamily.queueCount > 0 && presentSupport)
-			{
-				indices.presentFamily = i;
-			}
-
-			if (indices.isComplete())
-			{
-				break;
-			}
-
-			i++;
-		}
-
-		return indices;
 	}
 
 	//Get required extensions if validation layers are active also add debug extension to the list
