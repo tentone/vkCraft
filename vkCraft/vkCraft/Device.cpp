@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <iostream>
 
 #include "QueueFamilyIndices.cpp"
 
@@ -27,7 +28,7 @@ public:
 	/**
 	 * Check which queue families are supported by the physical device.
 	 *
-	 * We only need it to support graphics rendering.
+	 * We only need it to support graphics rendering to a surface.
 	 */
 	QueueFamilyIndices getQueueFamilyIndices(VkSurfaceKHR surface)
 	{
@@ -35,6 +36,8 @@ public:
 
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physical, &queueFamilyCount, nullptr);
+
+		std::cout << queueFamilyCount << std::endl;
 
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physical, &queueFamilyCount, queueFamilies.data());

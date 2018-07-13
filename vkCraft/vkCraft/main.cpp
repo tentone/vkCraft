@@ -319,6 +319,8 @@ private:
 
 		//Pick a device
 		pickPhysicalDevice();
+		
+		/*
 		createLogicalDevice();
 
 		//Create swap chain
@@ -362,6 +364,7 @@ private:
 
 		//Semaphores
 		createSyncObjects();
+		*/
 	}
 
 	void recreateSwapChain()
