@@ -23,7 +23,14 @@ public:
 	/**
 	 * The logical device is used to execute all the vulkan operations.
 	 */
-	VkDevice logical;
+	VkDevice logical = VK_NULL_HANDLE;
+
+	Device(){}
+
+	Device(VkPhysicalDevice _physical)
+	{
+		physical = _physical;
+	}
 
 	/**
 	 * Check which queue families are supported by the physical device.
@@ -36,8 +43,6 @@ public:
 
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physical, &queueFamilyCount, nullptr);
-
-		std::cout << queueFamilyCount << std::endl;
 
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physical, &queueFamilyCount, queueFamilies.data());

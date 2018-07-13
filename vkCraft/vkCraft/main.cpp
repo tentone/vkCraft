@@ -190,7 +190,6 @@ private:
 		vkDeviceWaitIdle(device.logical);
 	}
 
-
 	//Object3D and camera
 	Object3D model;
 	FirstPersonCamera camera;
@@ -319,8 +318,6 @@ private:
 
 		//Pick a device
 		pickPhysicalDevice();
-		
-		/*
 		createLogicalDevice();
 
 		//Create swap chain
@@ -364,7 +361,6 @@ private:
 
 		//Semaphores
 		createSyncObjects();
-		*/
 	}
 
 	void recreateSwapChain()
@@ -570,11 +566,11 @@ private:
 		std::vector<VkPhysicalDevice> devices(deviceCount);
 		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-		for (const auto& dev : devices)
+		for (const auto& physical : devices)
 		{
-			if (isPhysicalDeviceSuitable(dev))
+			if (isPhysicalDeviceSuitable(physical))
 			{
-				device.physical = dev;
+				device.physical = physical;
 				break;
 			}
 		}
@@ -1541,8 +1537,11 @@ private:
 		VkPhysicalDeviceFeatures supportedFeatures;
 		vkGetPhysicalDeviceFeatures(physical, &supportedFeatures);
 		
+		Device test;
+		test.physical = physical;
+
 		//Get queue family indices
-		QueueFamilyIndices indices = device.getQueueFamilyIndices(surface);
+		QueueFamilyIndices indices = test.getQueueFamilyIndices(surface);
 
 		return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 	}
