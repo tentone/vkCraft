@@ -38,7 +38,7 @@ public:
 	}
 
 	//Dispose the geometry
-	void dispose(VkDevice device)
+	virtual void dispose(VkDevice device)
 	{
 		vkDestroyBuffer(device, vertexBuffer, nullptr);
 		vkFreeMemory(device, vertexBufferMemory, nullptr);

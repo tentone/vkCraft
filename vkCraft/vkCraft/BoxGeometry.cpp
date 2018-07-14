@@ -14,6 +14,8 @@ public:
 		width = _width;
 		height = _height;
 		depth = _depth;
+
+		generate();
 	}
 
 	void generate()

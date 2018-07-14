@@ -41,7 +41,7 @@
     <ProjectGuid>{E98F73ED-7BB3-4803-A6D4-EC7E870EEF3F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>vkCraft</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -125,13 +125,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\stb-master;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glm;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\VulkanSDK\1.1.73.0\Include;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\stb-master;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\stb-master;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glm;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\VulkanSDK\1.1.77.0\Include;C:\VulkanSDK\1.1.73.0\Include;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\stb-master;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.73.0\Lib;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.77.0\Lib;C:\VulkanSDK\1.1.73.0\Lib;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

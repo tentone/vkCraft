@@ -89,7 +89,6 @@ public:
 	VkCraft()
 	{
 		geometry = new BoxGeometry();
-		geometry->generate();
 	}
 
 	void run()
