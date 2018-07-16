@@ -31,6 +31,20 @@ public:
 	{
 		physical = _physical;
 	}
+	
+	Device(VkPhysicalDevice _physical, VkDevice _logical)
+	{
+		physical = _physical;
+		logical = _logical;
+	}
+
+	/**
+	 * Dispose device and all the buffers, pools associated with it.
+	 */
+	void dispose()
+	{
+		vkDestroyDevice(logical, nullptr);
+	}
 
 	/**
 	 * Check which queue families are supported by the physical device.

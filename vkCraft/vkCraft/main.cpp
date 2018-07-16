@@ -38,6 +38,8 @@
 #include "BoxGeometry.cpp"
 #include "ChunkGeometry.cpp"
 
+const int MAX_FRAMES_IN_FLIGHT = 1;
+
 const std::vector<const char*> validationLayers =
 {
 	"VK_LAYER_LUNARG_standard_validation"
@@ -53,8 +55,6 @@ const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
-
-const int MAX_FRAMES_IN_FLIGHT = 1;
 
 //Declare the debug report extension
 VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
@@ -141,7 +141,7 @@ private:
 	Texture texture;
 
 	//Texture sampler
-	VkSampler textureSampler;
+	VkSampler textureSampler = VK_NULL_HANDLE;
 
 	//Depth buffer
 	Texture depth;
@@ -155,6 +155,11 @@ private:
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	size_t currentFrame = 0;
+
+	//Object3D and camera
+	Object3D model;
+	FirstPersonCamera camera;
+	double time, delta;
 
 	//Initialize GLFW window
 	void initWindow()
@@ -188,11 +193,6 @@ private:
 
 		vkDeviceWaitIdle(device.logical);
 	}
-
-	//Object3D and camera
-	Object3D model;
-	FirstPersonCamera camera;
-	double time, delta;
 
 	//Update the uniform buffers (and run some logic)
 	void update()
@@ -445,7 +445,8 @@ private:
 		}
 
 		vkDestroyCommandPool(device.logical, commandPool, nullptr);
-		vkDestroyDevice(device.logical, nullptr);
+		
+		device.dispose();
 
 		if (enableValidationLayers)
 		{
