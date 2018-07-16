@@ -30,7 +30,8 @@ public:
 	{
 		for (int i = 0; i < vertices.size(); i++)
 		{
-			glm::vec4 result = matrix * glm::vec4(vertices[i].pos, 0.0);
+			glm::vec4 result = matrix * glm::vec4(vertices[i].pos, 0.0f);
+			
 			vertices[i].pos.x = result.x;
 			vertices[i].pos.y = result.y;
 			vertices[i].pos.z = result.z;
