@@ -35,4 +35,12 @@ public:
 			throw std::runtime_error("vkCraft: Failed to create texture sampler!");
 		}
 	}
+
+	//Dispose texture
+	void dispose(VkDevice *device)
+	{
+		vkDestroyImageView(*device, imageView, nullptr);
+		vkDestroyImage(*device, image, nullptr);
+		vkFreeMemory(*device, imageMemory, nullptr);
+	}
 };

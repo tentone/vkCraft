@@ -39,4 +39,5 @@ public:
 
 		vkBindBufferMemory(device.logical, buffer, bufferMemory, 0);
 	}
+
 };

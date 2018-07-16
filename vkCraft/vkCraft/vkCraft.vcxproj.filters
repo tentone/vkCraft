@@ -20,6 +20,9 @@
     <Filter Include="Source Files\renderer">
       <UniqueIdentifier>{194d02e8-cda6-4631-a4e7-c92b20d23ea8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\chunk">
+      <UniqueIdentifier>{69354b52-4646-411b-9cde-d45f5f59b8dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -49,9 +52,6 @@
     <ClCompile Include="FileUtils.cpp">
       <Filter>Source Files\utils</Filter>
     </ClCompile>
-    <ClCompile Include="ChunkGeometry.cpp">
-      <Filter>Source Files\geometry</Filter>
-    </ClCompile>
     <ClCompile Include="UniformBufferObject.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
@@ -69,6 +69,15 @@
     </ClCompile>
     <ClCompile Include="Device.cpp">
       <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkGeometry.cpp">
+      <Filter>Source Files\chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="Chunk.cpp">
+      <Filter>Source Files\chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkWorld.cpp">
+      <Filter>Source Files\chunk</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

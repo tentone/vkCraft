@@ -388,9 +388,7 @@ private:
 	void cleanupSwapChain()
 	{
 		//Depth buffer data
-		vkDestroyImageView(device.logical, depth.imageView, nullptr);
-		vkDestroyImage(device.logical, depth.image, nullptr);
-		vkFreeMemory(device.logical, depth.imageMemory, nullptr);
+		depth.dispose(&device.logical);
 
 		for (auto framebuffer : swapChainFramebuffers)
 		{
@@ -426,9 +424,7 @@ private:
 		vkDestroySampler(device.logical, textureSampler, nullptr);
 
 		//Texture data
-		vkDestroyImageView(device.logical, texture.imageView, nullptr);
-		vkDestroyImage(device.logical, texture.image, nullptr);
-		vkFreeMemory(device.logical, texture.imageMemory, nullptr);
+		texture.dispose(&device.logical);
 
 		//Descriptors
 		vkDestroyDescriptorPool(device.logical, descriptorPool, nullptr);
@@ -1160,7 +1156,6 @@ private:
 
 		VkPipelineStageFlags sourceStage;
 		VkPipelineStageFlags destinationStage;
-
 
 		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 		{
