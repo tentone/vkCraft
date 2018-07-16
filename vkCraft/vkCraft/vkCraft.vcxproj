@@ -37,6 +37,7 @@
     <ClCompile Include="Object3D.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UniformBufferObject.cpp" />
+    <ClCompile Include="ValidationUtils.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

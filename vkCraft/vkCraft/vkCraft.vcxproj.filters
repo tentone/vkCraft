@@ -82,5 +82,8 @@
     <ClCompile Include="CommandBufferUtils.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="ValidationUtils.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
