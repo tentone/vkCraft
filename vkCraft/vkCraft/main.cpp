@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/constants.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -88,7 +89,9 @@ class VkCraft
 public:
 	VkCraft()
 	{
+		glm::mat4 mat = glm::scale(glm::mat4(), glm::vec3(0.5, 1.0, 1.0));
 		geometry = new BoxGeometry();
+		geometry->applyTransformationMatrix(mat);
 	}
 
 	void run()

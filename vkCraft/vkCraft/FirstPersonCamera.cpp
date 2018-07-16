@@ -32,6 +32,11 @@ public:
 	 */
 	glm::vec2 delta;
 
+	FirstPersonCamera()
+	{
+		position.z = 5.0f;
+	}
+
 	/**
 	 * Update the camera movement from user input.
 	 */

@@ -5,6 +5,9 @@
 #include "Geometry.cpp"
 #include "Vertex.cpp"
 
+/**
+ * Geometry to represent a chunk in the world.
+ */
 class ChunkGeometry : public Geometry
 {
 public:
@@ -20,10 +23,7 @@ public:
 				//vertices.push_back();
 				//vertices.push_back();
 			}
-		}
-		
-		
-
-		
+		}	
 	}
+
 };

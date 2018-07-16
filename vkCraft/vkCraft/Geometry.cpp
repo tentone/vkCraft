@@ -28,13 +28,29 @@ public:
 	//Apply a matrix transformation to the geometry vertex position
 	void applyTransformationMatrix(glm::mat4 matrix)
 	{
-		//TODO <ADD CODE HERE>
+		for (int i = 0; i < vertices.size(); i++)
+		{
+			glm::vec4 result = matrix * glm::vec4(vertices[i].pos, 0.0);
+			vertices[i].pos.x = result.x;
+			vertices[i].pos.y = result.y;
+			vertices[i].pos.z = result.z;
+		}
 	}
 
 	//Append another geometry data to this geometry
-	void append(Geometry *geometry)
+	void merge(Geometry *geometry)
 	{
-		//TODO <ADD CODE HERE>
+		int initialSize = vertices.size() - 1;
+
+		for (int i = 0; i < geometry->vertices.size(); i++)
+		{
+			vertices.push_back(geometry->vertices[i]);
+		}
+
+		for (int i = 0; i < geometry->indices.size(); i++)
+		{
+			indices.push_back(geometry->indices[i] + initialSize);
+		}
 	}
 
 	//Dispose the geometry
