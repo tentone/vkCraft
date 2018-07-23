@@ -70,9 +70,6 @@
     <ClCompile Include="Device.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="ChunkGeometry.cpp">
-      <Filter>Source Files\chunk</Filter>
-    </ClCompile>
     <ClCompile Include="Chunk.cpp">
       <Filter>Source Files\chunk</Filter>
     </ClCompile>
@@ -84,6 +81,9 @@
     </ClCompile>
     <ClCompile Include="ValidationUtils.cpp">
       <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkGeometry.cpp">
+      <Filter>Source Files\geometry</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

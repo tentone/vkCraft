@@ -17,7 +17,11 @@ public:
 	VkDeviceMemory indexBufferMemory;
 
 	//Method to generate the geometry index and vertex data
-	virtual void generate(){}
+	virtual void generate()
+	{
+		vertices = {};
+		indices = {};
+	}
 
 	//Create the vertex and index buffers
 	void createBuffers(VkDevice device)

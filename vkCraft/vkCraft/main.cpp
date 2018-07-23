@@ -89,13 +89,23 @@ class VkCraft
 public:
 	VkCraft()
 	{
-		geometry = new BoxGeometry();
+		geometry = new Geometry();
 
-		glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(0.0f, 2.0f, 0.0f));
-		
-		Geometry *geo = new BoxGeometry();
-		geo->applyTransformationMatrix(mat);
-		geometry->merge(geo);
+		//glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(0.0f, 2.0f, 0.0f));
+		//Geometry *geo = new BoxGeometry();
+		//geo->applyTransformationMatrix(mat);
+		//geometry->merge(geo);
+
+		for(int x = 0; x < 200; x+=2)
+			{
+			for(int z = 0; z < 200; z+=2)
+			{
+				glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(x, floor(cos(x / 25) * 5 + cos(z / 20 * sin(x / 100) * 2) * 3), z));
+				Geometry *geo = new BoxGeometry();
+				geo->applyTransformationMatrix(mat);
+				geometry->merge(geo);
+			}
+		}
 	}
 
 	void run()
