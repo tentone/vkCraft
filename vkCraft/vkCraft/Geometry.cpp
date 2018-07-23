@@ -30,7 +30,7 @@ public:
 	{
 		for (int i = 0; i < vertices.size(); i++)
 		{
-			glm::vec4 result = matrix * glm::vec4(vertices[i].pos, 0.0f);
+			glm::vec4 result = matrix * glm::vec4(vertices[i].pos, 1.0f);
 			
 			vertices[i].pos.x = result.x;
 			vertices[i].pos.y = result.y;
@@ -41,7 +41,7 @@ public:
 	//Append another geometry data to this geometry
 	void merge(Geometry *geometry)
 	{
-		int initialSize = vertices.size() - 1;
+		int initialSize = vertices.size();
 
 		for (int i = 0; i < geometry->vertices.size(); i++)
 		{
