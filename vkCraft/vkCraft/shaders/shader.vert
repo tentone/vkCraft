@@ -14,6 +14,8 @@ layout(location = 2) in vec2 inTexCoord;
 
 layout(location = 0) out vec3 fragNormal;
 layout(location = 1) out vec2 fragTexCoord;
+layout(location = 2) out vec3 fragVertex;
+layout(location = 3) out mat4 fragModel;
 
 out gl_PerVertex
 {
@@ -23,6 +25,9 @@ out gl_PerVertex
 void main()
 {
     gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+
     fragNormal = inNormal;
     fragTexCoord = inTexCoord;
+    fragVertex = inPosition;
+    fragModel = ubo.model;
 }

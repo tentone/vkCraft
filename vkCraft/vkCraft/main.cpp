@@ -96,11 +96,11 @@ public:
 		//geo->applyTransformationMatrix(mat);
 		//geometry->merge(geo);
 
-		for(int x = 0; x < 200; x+=2)
+		for(int x = 0; x < 128; x++)
 			{
-			for(int z = 0; z < 200; z+=2)
+			for(int z = 0; z < 128; z++)
 			{
-				glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(x, floor(cos(x / 25) * 5 + cos(z / 20 * sin(x / 100) * 2) * 3), z));
+				glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x, floor(cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 100.0) * 2.0) * 3.0), z)), glm::vec3(0.5, 0.5, 0.5));
 				Geometry *geo = new BoxGeometry();
 				geo->applyTransformationMatrix(mat);
 				geometry->merge(geo);
@@ -218,7 +218,7 @@ private:
 		delta = actual - time;
 		time = actual;
 
-		model.position.x = (float)cos(time);
+		//model.position.x = (float)cos(time);
 
 		//model.rotation.y = time;
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
