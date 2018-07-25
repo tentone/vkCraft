@@ -97,13 +97,19 @@ public:
 		//geometry->merge(geo);
 
 		for(int x = 0; x < 128; x++)
-			{
+		{
 			for(int z = 0; z < 128; z++)
 			{
-				glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x, floor(cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 100.0) * 2.0) * 3.0), z)), glm::vec3(0.5, 0.5, 0.5));
-				Geometry *geo = new BoxGeometry();
-				geo->applyTransformationMatrix(mat);
-				geometry->merge(geo);
+				int y = floor(cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 100.0) * 2.0) * 3.0);
+
+				while (y >= -8)
+				{
+					glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x, y, z)), glm::vec3(0.5, 0.5, 0.5));
+					Geometry *geo = new BoxGeometry();
+					geo->applyTransformationMatrix(mat);
+					geometry->merge(geo);
+					y--;
+				}
 			}
 		}
 	}

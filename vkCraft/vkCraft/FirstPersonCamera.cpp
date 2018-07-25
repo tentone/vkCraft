@@ -43,7 +43,7 @@ public:
 	void update(GLFWwindow *window, double time)
 	{
 		float moveSpeed = 5.0f * time;
-		float lookSpeed = 2.0f * time;
+		float lookSpeed = 0.4f * time;
 
 		float pi = 3.14159265359f;
 		float pid2 = pi / 2.0f;
