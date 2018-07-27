@@ -26,11 +26,11 @@ public:
 		vertices = {};
 		indices = {};
 
-		for (int x = 0; x < 128; x++)
+		for (int x = 0; x < 32; x++)
 		{
-			for (int z = 0; z < 128; z++)
+			for (int z = 0; z < 32; z++)
 			{
-				int y = floor(cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 100.0) * 2.0) * 3.0);
+				int y = floor(cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 10.0) * 2.0) * 3.0);
 
 				while (y >= -8)
 				{

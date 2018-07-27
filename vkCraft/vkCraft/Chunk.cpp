@@ -8,6 +8,7 @@
 class Chunk
 {
 public:
+	const static int chunk_size = 32;
 	int data[32][32][32];
 
 	Chunk()
