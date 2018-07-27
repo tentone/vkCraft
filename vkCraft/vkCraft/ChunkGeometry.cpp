@@ -26,18 +26,22 @@ public:
 		vertices = {};
 		indices = {};
 
-		//BoxGeometry *geometry = new BoxGeometry();
-		//geometry.applyTransformationMatrix(glm::translate(glm::mat4(), glm::vec3(x, floor(cos(x / 25) * 5 + cos(z / 20 * sin(x / 100) * 2) * 3), z)));
-		//merge(geometry);
-		/*for(int x = 0; x < 200; x++)
+		for (int x = 0; x < 128; x++)
 		{
-			for(int z = 0; z < 200; z++)
+			for (int z = 0; z < 128; z++)
 			{
-				BoxGeometry geometry;
-				geometry.applyTransformationMatrix(glm::translate(glm::mat4(), glm::vec3(x, floor(cos(x / 25) * 5 + cos(z / 20 * sin(x / 100) * 2) * 3), z)));
-				merge(&geometry);
+				int y = floor(cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 100.0) * 2.0) * 3.0);
+
+				while (y >= -8)
+				{
+					glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x, y, z)), glm::vec3(0.5, 0.5, 0.5));
+					Geometry *geo = new BoxGeometry();
+					geo->applyTransformationMatrix(mat);
+					this->merge(geo);
+					y--;
+				}
 			}
-		}*/
+		}
 	}
 
 };

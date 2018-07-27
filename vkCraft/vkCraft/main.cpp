@@ -96,9 +96,9 @@ public:
 		//geo->applyTransformationMatrix(mat);
 		//geometry->merge(geo);
 
-		for(int x = 0; x < 128; x++)
+		for(int x = 0; x < 32; x++)
 		{
-			for(int z = 0; z < 128; z++)
+			for(int z = 0; z < 32; z++)
 			{
 				int y = floor(cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 100.0) * 2.0) * 3.0);
 
@@ -365,7 +365,7 @@ private:
 		createFramebuffers();
 
 		//Texture data
-		createTextureImage("texture/uv.png");
+		createTextureImage("texture/minecraft.png");
 		texture.createSampler(&device.logical, &textureSampler);
 
 		//Buffers

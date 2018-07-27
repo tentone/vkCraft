@@ -31,11 +31,11 @@ void main()
 	/* Directional light */
 	DirectionalLight direct;
 	direct.color = vec3(0.5, 0.5, 0.5);
-	direct.position = vec3(0.0, 2.0, 1.0);
+	direct.position = normalize(vec3(0.0, 2.0, 1.0));
 	vec3 directional = directionalLight(direct, vertex, normal);
 
 	/* Ambient light */
-	vec3 ambient = vec3(0.6, 0.6, 0.6);
+	vec3 ambient = vec3(0.5, 0.5, 0.5);
 
     outColor = texture(texSampler, fragTexCoord);
     outColor.rgb *= (ambient + directional);

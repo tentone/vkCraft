@@ -83,7 +83,7 @@
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
     <ClCompile Include="ChunkGeometry.cpp">
-      <Filter>Source Files\geometry</Filter>
+      <Filter>Source Files\chunk</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
