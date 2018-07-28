@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "Device.cpp"
+#include "CommandBufferUtils.cpp"
 
 class BufferUtils
 {
@@ -40,17 +41,15 @@ public:
 		vkBindBufferMemory(device.logical, buffer, bufferMemory, 0);
 	}
 
-	/*
 	//Copy the contents of a buffer to another buffer (move to BufferUtils)
-	static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+	/*static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 	{
-		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+		VkCommandBuffer commandBuffer = CommandBufferUtils::beginSingleTimeCommands();
 
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = size;
 		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-		endSingleTimeCommands(commandBuffer);
-	}
-	*/
+		CommandBufferUtils::endSingleTimeCommands(commandBuffer);
+	}*/
 };

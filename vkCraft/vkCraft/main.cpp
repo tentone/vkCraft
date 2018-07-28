@@ -347,10 +347,9 @@ private:
 		createTextureImage("texture/minecraft.png");
 		texture.createSampler(&device.logical, &textureSampler);
 
-		//Buffers
+		//geometry->createBuffers(&device);
 		createVertexBuffer();
 		createIndexBuffer();
-
 		createUniformBuffer();
 
 		//Descriptors
@@ -358,7 +357,7 @@ private:
 		createDescriptorSet();
 
 		//Command buffers
-		createCommandBuffers();
+		createRenderingCommandBuffers();
 
 		//Semaphores
 		createSyncObjects();
@@ -383,7 +382,7 @@ private:
 		createGraphicsPipeline();
 		createDepthResources();
 		createFramebuffers();
-		createCommandBuffers();
+		createRenderingCommandBuffers();
 	}
 
 	//Cleanup swapchain elements
@@ -1372,7 +1371,7 @@ private:
 	}
 
 	//Create the actual draw command buffer
-	void createCommandBuffers()
+	void createRenderingCommandBuffers()
 	{
 		commandBuffers.resize(swapChainFramebuffers.size());
 
@@ -1416,14 +1415,13 @@ private:
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
+			
 			VkBuffer vertexBuffers[] = { geometry->vertexBuffer };
 			VkDeviceSize offsets[] = { 0 };
+
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(commandBuffers[i], geometry->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-			
 			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry->indices.size()), 1, 0, 0, 0);
 
 			//End rendering
