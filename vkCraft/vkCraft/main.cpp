@@ -89,7 +89,7 @@ class VkCraft
 public:
 	VkCraft()
 	{
-		geometry = new ChunkGeometry();
+		geometry = new BoxGeometry();
 		geometry->generate();
 	}
 

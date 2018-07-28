@@ -19,10 +19,16 @@
 class ChunkGeometry : public Geometry
 {
 public:
-	const glm::vec4 UV_GROUND = glm::vec4(0.0f, 0.0f, 0.25f, 0.25f);
-	const glm::vec4 UV_GRASS = glm::vec4(0.25f, 0.0f, 0.50f, 0.25f);
+	const std::vector<glm::vec4> UVS =
+	{
+		{0.0f, 0.0f, 0.25f, 0.25f}, //GROUND
+		{0.25f, 0.0f, 0.50f, 0.25f} //GRASS
+	};
 
-	std::vector<glm::vec3> FRONT_FACE = {{-1, -1, 1}, {1, -1, 1}, {1, 1, 1},{-1, 1, 1 }};
+	//Front
+	const std::vector<glm::vec3> FRONT_VERTEX = { { -1, -1, 1 },{ 1, -1, 1 },{ 1, 1, 1 },{ -1, 1, 1 } };
+	const glm::vec3 FRONT_NORMAL = { 0, 0, 1 };
+	const std::vector<int> FRONT_INDEX = { 0, 2, 3, 0, 3, 1 };
 
 	void generate()
 	{
@@ -48,14 +54,15 @@ public:
 
 		for (int i = 0; i < vertices.size(); i += 4)
 		{
-			vertices[i].uv.x = UV_GRASS.x;
-			vertices[i].uv.y = UV_GRASS.y;
-			vertices[i + 1].uv.x = UV_GRASS.z;
-			vertices[i + 1].uv.y = UV_GRASS.y;
-			vertices[i + 2].uv.x = UV_GRASS.x;
-			vertices[i + 2].uv.y = UV_GRASS.w;
-			vertices[i + 3].uv.x = UV_GRASS.z;
-			vertices[i + 3].uv.y = UV_GRASS.w;
+			int index = (i > (vertices.size() / 2)) ? 0 : 1;
+			vertices[i].uv.x = UVS[index].x;
+			vertices[i].uv.y = UVS[index].y;
+			vertices[i + 1].uv.x = UVS[index].z;
+			vertices[i + 1].uv.y = UVS[index].y;
+			vertices[i + 2].uv.x = UVS[index].x;
+			vertices[i + 2].uv.y = UVS[index].w;
+			vertices[i + 3].uv.x = UVS[index].z;
+			vertices[i + 3].uv.y = UVS[index].w;
 		}
 	}
 
