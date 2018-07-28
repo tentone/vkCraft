@@ -21,6 +21,9 @@ class ChunkGeometry : public Geometry
 public:
 	const glm::vec4 UV_GROUND = glm::vec4(0.0f, 0.0f, 0.25f, 0.25f);
 	const glm::vec4 UV_GRASS = glm::vec4(0.25f, 0.0f, 0.50f, 0.25f);
+
+	std::vector<glm::vec3> FRONT_FACE = {{-1, -1, 1}, {1, -1, 1}, {1, 1, 1},{-1, 1, 1 }};
+
 	void generate()
 	{
 		vertices = {};
