@@ -19,8 +19,8 @@
 class ChunkGeometry : public Geometry
 {
 public:
-	//const glm::vec4 UV_GROUND = glm::vec4(0.0f, 0.0f, 0.25f, 0.25f);
-
+	const glm::vec4 UV_GROUND = glm::vec4(0.0f, 0.0f, 0.25f, 0.25f);
+	const glm::vec4 UV_GRASS = glm::vec4(0.25f, 0.0f, 0.50f, 0.25f);
 	void generate()
 	{
 		vertices = {};
@@ -41,6 +41,18 @@ public:
 					y--;
 				}
 			}
+		}
+
+		for (int i = 0; i < vertices.size(); i += 4)
+		{
+			vertices[i].uv.x = UV_GRASS.x;
+			vertices[i].uv.y = UV_GRASS.y;
+			vertices[i + 1].uv.x = UV_GRASS.z;
+			vertices[i + 1].uv.y = UV_GRASS.y;
+			vertices[i + 2].uv.x = UV_GRASS.x;
+			vertices[i + 2].uv.y = UV_GRASS.w;
+			vertices[i + 3].uv.x = UV_GRASS.z;
+			vertices[i + 3].uv.y = UV_GRASS.w;
 		}
 	}
 
