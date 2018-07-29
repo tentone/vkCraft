@@ -89,7 +89,7 @@ class VkCraft
 public:
 	VkCraft()
 	{
-		geometry = new BoxGeometry();
+		geometry = new ChunkGeometry();
 		geometry->generate();
 	}
 
@@ -100,7 +100,7 @@ public:
 		mainLoop();
 		cleanup();
 	}
-private:
+
 	Geometry *geometry;
 
 	//Vulkan context and window
