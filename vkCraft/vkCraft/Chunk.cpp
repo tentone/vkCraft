@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#define CHUNK_SIZE 32
 /**
  * Chunks store the world data.
  *
@@ -18,45 +17,52 @@
 class Chunk
 {
 public:
-	int data[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+	static const int SIZE = 32;
+
+	static const int EMPTY = 0;
+	static const int GRASS = 1;
+	static const int SAND = 2;
+	static const int STONE = 3;
+	static const int DIRT = 4;
+	static const int WATER = 4;
+
+	int data[SIZE][SIZE][SIZE];
 	glm::ivec3 position;
 
+	/**
+	 * Chunk constructor receives a position and creates chunk data based on it.
+	 *
+	 * The chunk position is organized in x,y,z, each step represents a move of CHUNK_SIZE in the world.
+	 */
 	Chunk(glm::ivec3 _position)
 	{
 		position = _position;
+		generate();
 	}
 
 	/**
-	 * Generate chunk based on its position.
+	 * Generate chunk data based on its position.
 	 */
 	void generate()
 	{
-		for (int x = 0; x < CHUNK_SIZE; x++)
+		for (int x = 0; x < SIZE; x++)
 		{
-			for (int z = 0; x < CHUNK_SIZE; x++)
+			for (int z = 0; z < SIZE; z++)
 			{
 				int height = cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 10.0) * 2.0) * 3.0;
 
-				for (int y = 0; x < CHUNK_SIZE; x++)
+				for (int y = 0; y < SIZE; y++)
 				{
 					if (y < height)
 					{
-						data[x][y][z] = 1;
+						data[x][y][z] = GRASS;
 					}
 					else
 					{
-						data[x][y][z] = 0;
+						data[x][y][z] = EMPTY;
 					}
 				}
 			}
 		}
-	}
-
-	/**
-	 * Get the chunk size.
-	 */
-	static int getSize()
-	{
-		return CHUNK_SIZE;
 	}
 };

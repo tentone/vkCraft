@@ -12,6 +12,7 @@
 #include "Geometry.cpp"
 #include "BoxGeometry.cpp"
 #include "Vertex.cpp"
+#include "Chunk.cpp"
 
 /**
  * Geometry to represent a chunk in the world.
@@ -19,50 +20,78 @@
 class ChunkGeometry : public Geometry
 {
 public:
+	/**
+	 * List of UV's for the materials.
+	 */
 	const std::vector<glm::vec4> UVS =
 	{
-		{0.0f, 0.0f, 0.25f, 0.25f}, //GROUND
-		{0.25f, 0.0f, 0.50f, 0.25f} //GRASS
+		{0.0f, 0.0f, 1.0f, 1.0f}, //EMPTY
+		{0.0f, 0.0f, 1/16.0f, 1/16.0f}, //GRASS
+		{1/16.0f, 0.0f,1/8.0f, 1/16.0f} //SAND
 	};
 
-	//Front
-	const std::vector<glm::vec3> FRONT_VERTEX = { { -1, -1, 1 },{ 1, -1, 1 },{ 1, 1, 1 },{ -1, 1, 1 } };
+	/**
+	 * Geometry for the cube voxel sides.
+	 */
+	const std::vector<glm::vec3> FRONT_VERTEX = { { -0.5f, -0.5f, 0.5f },{ 0.5f, -0.5f, 0.5f },{ 0.5f, 0.5f, 0.5f },{ -0.5f, 0.5f, 0.5f } };
 	const glm::vec3 FRONT_NORMAL = { 0, 0, 1 };
 	const std::vector<int> FRONT_INDEX = { 0, 2, 3, 0, 3, 1 };
 
-	void generate()
+	/**
+	 * Chunk with the data to generate the geometry.
+	 */
+	Chunk *chunk;
+
+	ChunkGeometry(Chunk *_chunk)
 	{
+		chunk = _chunk;
+		generate();
+	}
+
+	/**
+	 * Generate new geometry data for the attached chunk.
+	 */
+	void generate()
+	{	
 		vertices = {};
 		indices = {};
+		
 
-		for (int x = 0; x < 32; x++)
+		for (int x = 0; x < Chunk::SIZE; x++)
 		{
-			for (int z = 0; z < 32; z++)
+			for (int z = 0; z < Chunk::SIZE; z++)
 			{
-				int y = floor(cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 10.0) * 2.0) * 3.0);
-
-				while (y >= -8)
+				for (int y = 0; y < Chunk::SIZE; y++)
 				{
-					glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x, y, z)), glm::vec3(0.5, 0.5, 0.5));
-					Geometry *geo = new BoxGeometry();
-					geo->applyTransformationMatrix(mat);
-					this->merge(geo);
-					y--;
+					int value = chunk->data[x][y][z];
+
+					if (value != Chunk::EMPTY)
+					{
+						//Transformation matrix
+						glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x, y, z)), glm::vec3(0.5, 0.5, 0.5));
+
+						//Box geometry
+						Geometry *geo = new BoxGeometry();
+						geo->applyTransformationMatrix(mat);
+
+						//Set the UV
+						for (int i = 0; i < geo->vertices.size(); i += 4)
+						{
+							geo->vertices[i].uv.x = UVS[value].x;
+							geo->vertices[i].uv.y = UVS[value].y;
+							geo->vertices[i + 1].uv.x = UVS[value].z;
+							geo->vertices[i + 1].uv.y = UVS[value].y;
+							geo->vertices[i + 2].uv.x = UVS[value].x;
+							geo->vertices[i + 2].uv.y = UVS[value].w;
+							geo->vertices[i + 3].uv.x = UVS[value].z;
+							geo->vertices[i + 3].uv.y = UVS[value].w;
+						}
+
+						this->merge(geo);
+					}
+
 				}
 			}
-		}
-
-		for (int i = 0; i < vertices.size(); i += 4)
-		{
-			int index = (i > (vertices.size() / 2)) ? 0 : 1;
-			vertices[i].uv.x = UVS[index].x;
-			vertices[i].uv.y = UVS[index].y;
-			vertices[i + 1].uv.x = UVS[index].z;
-			vertices[i + 1].uv.y = UVS[index].y;
-			vertices[i + 2].uv.x = UVS[index].x;
-			vertices[i + 2].uv.y = UVS[index].w;
-			vertices[i + 3].uv.x = UVS[index].z;
-			vertices[i + 3].uv.y = UVS[index].w;
 		}
 	}
 

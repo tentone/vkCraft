@@ -37,6 +37,8 @@
 
 #include "PlaneGeometry.cpp"
 #include "BoxGeometry.cpp"
+
+#include "Chunk.cpp"
 #include "ChunkGeometry.cpp"
 
 const int MAX_FRAMES_IN_FLIGHT = 1;
@@ -89,7 +91,9 @@ class VkCraft
 public:
 	VkCraft()
 	{
-		geometry = new ChunkGeometry();
+		Chunk *chunk = new Chunk(glm::ivec3(0, 0, 0));
+
+		geometry = new ChunkGeometry(chunk);
 		geometry->generate();
 	}
 
