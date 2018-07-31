@@ -208,8 +208,8 @@ public:
 		time = actual;
 
 		//model.position.x = (float)cos(time);
-
 		//model.rotation.y = time;
+
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
 			model.rotation.y -= 0.0001f;
@@ -224,12 +224,14 @@ public:
 		//Update first person camera
 		camera.update(window, delta);
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
-
+		
+		//Craete UBO
 		UniformBufferObject uniformBuf;
 		uniformBuf.model = model.matrix;
 		uniformBuf.view = camera.matrix;
 		uniformBuf.projection = camera.projection;
-
+		
+		//Copy UBO data
 		void* data;
 		vkMapMemory(device.logical, uniformBufferMemory, 0, sizeof(uniformBuf), 0, &data);
 		memcpy(data, &uniformBuf, sizeof(uniformBuf));
@@ -352,8 +354,8 @@ public:
 		texture.createSampler(&device.logical, &textureSampler);
 
 		//geometry->createBuffers(&device);
-		createVertexBuffer();
-		createIndexBuffer();
+		createVertexBuffer(geometry);
+		createIndexBuffer(geometry);
 		createUniformBuffer();
 
 		//Descriptors
@@ -830,7 +832,7 @@ public:
 		//How to asssembly vertex data
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; //VK_PRIMITIVE_TOPOLOGY_LINE_LIST 
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 		//Viewport
@@ -987,7 +989,7 @@ public:
 	}
 
 	//Create vertex buffer
-	void createVertexBuffer()
+	void createVertexBuffer(Geometry *geometry)
 	{
 		VkDeviceSize bufferSize = sizeof(geometry->vertices[0]) * geometry->vertices.size();
 
@@ -1011,7 +1013,7 @@ public:
 	}
 
 	//Create index buffer
-	void createIndexBuffer()
+	void createIndexBuffer(Geometry *geometry)
 	{
 		VkDeviceSize bufferSize = sizeof(geometry->indices[0]) * geometry->indices.size();
 
