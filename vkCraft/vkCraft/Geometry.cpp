@@ -26,61 +26,6 @@ public:
 		indices = {};
 	}
 
-	//Create the vertex and index buffers
-	void createBuffers(Device *device)
-	{
-		//createVertexBuffer(*device);
-		//createIndexBuffer(*device);
-	}
-
-	/*
-	//Create vertex buffer
-	void createVertexBuffer(Device device)
-	{
-		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-		void* data;
-		vkMapMemory(device.logical, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(device.logical, stagingBufferMemory);
-
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->vertexBuffer, geometry->vertexBufferMemory);
-
-		//Copy from CPU memory buffer to GPU memory buffer
-		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-		//Clean the stagging (CPU) buffer
-		vkDestroyBuffer(device.logical, stagingBuffer, nullptr);
-		vkFreeMemory(device.logical, stagingBufferMemory, nullptr);
-	}
-
-	//Create index buffer
-	void createIndexBuffer(Device device)
-	{
-		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-		void* data;
-		vkMapMemory(device.logical, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, indices.data(), (size_t)bufferSize);
-		vkUnmapMemory(device.logical, stagingBufferMemory);
-
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->indexBuffer, geometry->indexBufferMemory);
-
-		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-		vkDestroyBuffer(device.logical, stagingBuffer, nullptr);
-		vkFreeMemory(device.logical, stagingBufferMemory, nullptr);
-	}
-	*/
-
 	//Apply a matrix transformation to the geometry vertex position
 	void applyTransformationMatrix(glm::mat4 matrix)
 	{

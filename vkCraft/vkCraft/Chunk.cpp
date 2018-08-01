@@ -26,7 +26,14 @@ public:
 	static const int DIRT = 4;
 	static const int WATER = 4;
 
+	/**
+	 * Chunk data, constants defined in this class.
+	 */
 	int data[SIZE][SIZE][SIZE];
+
+	/**
+	 * Chunk position, in steps of one.
+	 */
 	glm::ivec3 position;
 
 	/**
@@ -49,7 +56,10 @@ public:
 		{
 			for (int z = 0; z < SIZE; z++)
 			{
-				int height = cos(x / 25.0) * 5.0 + cos(z / 20.0 * sin(x / 10.0) * 2.0) * 3.0;
+				int v = x + position.x * SIZE;
+				int w = z + position.z * SIZE;
+
+				int height = cos(v / 25.0) * 5.0 + cos(w / 20.0 * sin(v / 10.0) * 2.0) * 3.0;
 
 				for (int y = 0; y < SIZE; y++)
 				{

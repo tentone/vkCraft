@@ -91,10 +91,22 @@ class VkCraft
 public:
 	VkCraft()
 	{
-		Chunk *chunk = new Chunk(glm::ivec3(0, 0, 0));
+		std::cout << "Generating chunks" << std::endl;
 
-		geometry = new ChunkGeometry(chunk);
-		geometry->generate();
+		for (int x = -2; x < 2; x++)
+		{
+			for (int z = -2; z < 2; z++)
+			{
+				for (int y = -1; y < 1; y++)
+				{
+					Chunk chunk = Chunk(glm::ivec3(x, y, z));
+					Geometry *geo = new ChunkGeometry(&chunk);
+					geo->generate();
+					geometry.push_back(geo);
+				}
+			}
+
+		}
 	}
 
 	void run()
@@ -105,7 +117,7 @@ public:
 		cleanup();
 	}
 
-	Geometry *geometry;
+	std::vector<Geometry*> geometry;
 
 	//Vulkan context and window
 	GLFWwindow *window;
@@ -174,17 +186,6 @@ public:
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 		window = glfwCreateWindow(1024, 600, "VkCraft", nullptr, nullptr);
-
-		//Disable the mouse cursor
-		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-		//GLFW cursor callback
-		/*
-		glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos)
-		{
-		std::cout << "x:" << xpos << " y:" << ypos << std::endl;
-		});
-		*/
 	}
 
 	//Logic loop
@@ -206,9 +207,6 @@ public:
 		double actual = glfwGetTime();
 		delta = actual - time;
 		time = actual;
-
-		//model.position.x = (float)cos(time);
-		//model.rotation.y = time;
 
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
@@ -353,9 +351,12 @@ public:
 		createTextureImage("texture/minecraft.png");
 		texture.createSampler(&device.logical, &textureSampler);
 
-		//geometry->createBuffers(&device);
-		createVertexBuffer(geometry);
-		createIndexBuffer(geometry);
+		for (int i = 0; i < geometry.size(); i++)
+		{
+			createVertexBuffer(geometry[i]);
+			createIndexBuffer(geometry[i]);
+		}
+
 		createUniformBuffer();
 
 		//Descriptors
@@ -441,7 +442,10 @@ public:
 		vkDestroyBuffer(device.logical, uniformBuffer, nullptr);
 		vkFreeMemory(device.logical, uniformBufferMemory, nullptr);
 
-		geometry->dispose(device.logical);
+		for (int i = 0; i < geometry.size(); i++)
+		{
+			geometry[i]->dispose(device.logical);
+		}
 
 		//Semaphores
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -818,8 +822,8 @@ public:
 
 		VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-		auto bindingDescription = Vertex::getBindingDescription();
-		auto attributeDescriptions = Vertex::getAttributeDescriptions();
+		VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
+		std::array<VkVertexInputAttributeDescription, 3Ui64> attributeDescriptions = Vertex::getAttributeDescriptions();
 
 		//Vertex data format
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
@@ -1419,16 +1423,30 @@ public:
 
 			//Start rendering
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 			
-			VkBuffer vertexBuffers[] = { geometry->vertexBuffer };
-			VkDeviceSize offsets[] = { 0 };
+			/*
+			//Draw geometry
+			VkBuffer vertexBuffers[] = { geometry[0]->vertexBuffer };
+			
 
+			VkBuffer vertexBuffers[] = { geometry[0]->vertexBuffer };
+			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-			vkCmdBindIndexBuffer(commandBuffers[i], geometry->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffers[i], geometry[0]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry->indices.size()), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry[0]->indices.size()), 1, 0, 0, 0);
+			*/
+
+			for (int j = 0; j < geometry.size(); j++)
+			{
+				VkDeviceSize offsets[] = { 0 };
+
+				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(geometry[j]->vertexBuffer), offsets);
+				vkCmdBindIndexBuffer(commandBuffers[i], geometry[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry[j]->indices.size()), 1, 0, 0, 0);
+			}
 
 			//End rendering
 			vkCmdEndRenderPass(commandBuffers[i]);

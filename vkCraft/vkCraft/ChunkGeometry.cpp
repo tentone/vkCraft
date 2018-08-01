@@ -56,6 +56,10 @@ public:
 		vertices = {};
 		indices = {};
 		
+		glm::ivec3 start = chunk->position;
+		start *= Chunk::SIZE;
+		
+		glm::vec3 scale = glm::vec3(0.5, 0.5, 0.5);
 
 		for (int x = 0; x < Chunk::SIZE; x++)
 		{
@@ -68,7 +72,7 @@ public:
 					if (value != Chunk::EMPTY)
 					{
 						//Transformation matrix
-						glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x, y, z)), glm::vec3(0.5, 0.5, 0.5));
+						glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x + start.x, y + start.y, z + start.z)), scale);
 
 						//Box geometry
 						Geometry *geo = new BoxGeometry();
@@ -89,10 +93,8 @@ public:
 
 						this->merge(geo);
 					}
-
 				}
 			}
 		}
 	}
-
 };
