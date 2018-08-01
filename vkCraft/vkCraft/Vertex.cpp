@@ -12,13 +12,13 @@
 class Vertex
 {
 public:
-	glm::vec3 pos;
-	glm::vec3 normal;
+	glm::vec3 pos, normal;
 	glm::vec2 uv;
 
 	static VkVertexInputBindingDescription getBindingDescription()
 	{
 		VkVertexInputBindingDescription bindingDescription = {};
+
 		bindingDescription.binding = 0;
 		bindingDescription.stride = sizeof(Vertex);
 		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;

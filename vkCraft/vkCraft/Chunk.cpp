@@ -63,7 +63,9 @@ public:
 
 				for (int y = 0; y < SIZE; y++)
 				{
-					if (y < height)
+					int h = y + position.y * SIZE;
+
+					if (h < height)
 					{
 						data[x][y][z] = GRASS;
 					}

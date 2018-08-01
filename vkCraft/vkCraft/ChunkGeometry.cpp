@@ -11,8 +11,13 @@
 
 #include "Geometry.cpp"
 #include "BoxGeometry.cpp"
+#include "PlaneGeometry.cpp"
 #include "Vertex.cpp"
 #include "Chunk.cpp"
+
+//const std::vector<glm::vec3> FRONT_VERTEX = { { -0.5f, -0.5f, 0.5f },{ 0.5f, -0.5f, 0.5f },{ 0.5f, 0.5f, 0.5f },{ -0.5f, 0.5f, 0.5f } };
+//const glm::vec3 FRONT_NORMAL = {0, 0, 1};
+//const std::vector<int> FRONT_INDEX = {0, 2, 3, 0, 3, 1 };
 
 /**
  * Geometry to represent a chunk in the world.
@@ -29,13 +34,6 @@ public:
 		{0.0f, 0.0f, 1/16.0f, 1/16.0f}, //GRASS
 		{1/16.0f, 0.0f,1/8.0f, 1/16.0f} //SAND
 	};
-
-	/**
-	 * Geometry for the cube voxel sides.
-	 */
-	const std::vector<glm::vec3> FRONT_VERTEX = { { -0.5f, -0.5f, 0.5f },{ 0.5f, -0.5f, 0.5f },{ 0.5f, 0.5f, 0.5f },{ -0.5f, 0.5f, 0.5f } };
-	const glm::vec3 FRONT_NORMAL = { 0, 0, 1 };
-	const std::vector<int> FRONT_INDEX = { 0, 2, 3, 0, 3, 1 };
 
 	/**
 	 * Chunk with the data to generate the geometry.
@@ -71,6 +69,7 @@ public:
 
 					if (value != Chunk::EMPTY)
 					{
+						/*
 						//Transformation matrix
 						glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x + start.x, y + start.y, z + start.z)), scale);
 
@@ -92,7 +91,40 @@ public:
 						}
 
 						this->merge(geo);
+						*/
+
+						float ix = x + start.x;
+						float iy = y + start.y;
+						float iz = z + start.z;
+						
+						//Positive
+						float px = 0.5f + ix;
+						float py = 0.5f + iy;
+						float pz = 0.5f + iz;
+						
+						//Negative
+						float nx = -0.5f + ix;
+						float ny = -0.5f + iy;
+						float nz = -0.5f + iz;
+
+						//size
+						int size = vertices.size();
+
+						//Front face
+						indices.push_back(size);
+						indices.push_back(size + 2);
+						indices.push_back(size + 3);
+						indices.push_back(size);
+						indices.push_back(size + 3);
+						indices.push_back(size + 1);
+
+						vertices.push_back({ { nx, ny, pz }, { 0, 0, 1 }, { UVS[value].x, UVS[value].y } });
+						vertices.push_back({ { nx, py, pz }, { 0, 0, 1 }, { UVS[value].z, UVS[value].y } });
+						vertices.push_back({ { px, ny, pz }, { 0, 0, 1 }, { UVS[value].x, UVS[value].w } });
+						vertices.push_back({ { px, py, pz }, { 0, 0, 1 }, { UVS[value].z, UVS[value].w } });
+						
 					}
+					
 				}
 			}
 		}
