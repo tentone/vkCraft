@@ -76,5 +76,24 @@ public:
 				}
 			}
 		}
+
+		for (int x = 0; x < SIZE; x++)
+		{
+			for (int z = 0; z < SIZE; z++)
+			{
+				int last = data[x][0][z];
+
+				for (int y = 0; y < SIZE; y++)
+				{
+					if (last != data[x][y][z])
+					{
+						data[x][y][z] = SAND;
+						break;
+					}
+
+					last = data[x][y][z];
+				}
+			}
+		}
 	}
 };
