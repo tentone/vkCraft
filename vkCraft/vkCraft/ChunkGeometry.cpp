@@ -69,7 +69,7 @@ public:
 
 					if (value != Chunk::EMPTY)
 					{
-						/*
+						
 						//Transformation matrix
 						glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x + start.x, y + start.y, z + start.z)), scale);
 
@@ -91,8 +91,8 @@ public:
 						}
 
 						this->merge(geo);
-						*/
-
+						
+						/*
 						float ix = x + start.x;
 						float iy = y + start.y;
 						float iz = z + start.z;
@@ -122,7 +122,7 @@ public:
 						vertices.push_back({ { nx, py, pz }, { 0, 0, 1 }, { UVS[value].z, UVS[value].y } });
 						vertices.push_back({ { px, ny, pz }, { 0, 0, 1 }, { UVS[value].x, UVS[value].w } });
 						vertices.push_back({ { px, py, pz }, { 0, 0, 1 }, { UVS[value].z, UVS[value].w } });
-						
+						*/
 					}
 					
 				}
