@@ -69,30 +69,7 @@ public:
 
 					if (value != Chunk::EMPTY)
 					{
-						
-						//Transformation matrix
-						glm::mat4 mat = glm::scale(glm::translate(glm::mat4(), glm::vec3(x + start.x, y + start.y, z + start.z)), scale);
-
-						//Box geometry
-						Geometry *geo = new BoxGeometry();
-						geo->applyTransformationMatrix(mat);
-
-						//Set the UV
-						for (int i = 0; i < geo->vertices.size(); i += 4)
-						{
-							geo->vertices[i].uv.x = UVS[value].x;
-							geo->vertices[i].uv.y = UVS[value].y;
-							geo->vertices[i + 1].uv.x = UVS[value].z;
-							geo->vertices[i + 1].uv.y = UVS[value].y;
-							geo->vertices[i + 2].uv.x = UVS[value].x;
-							geo->vertices[i + 2].uv.y = UVS[value].w;
-							geo->vertices[i + 3].uv.x = UVS[value].z;
-							geo->vertices[i + 3].uv.y = UVS[value].w;
-						}
-
-						this->merge(geo);
-						
-						/*
+						//Base
 						float ix = x + start.x;
 						float iy = y + start.y;
 						float iz = z + start.z;
@@ -107,10 +84,9 @@ public:
 						float ny = -0.5f + iy;
 						float nz = -0.5f + iz;
 
-						//size
+						//Front face
 						int size = vertices.size();
 
-						//Front face
 						indices.push_back(size);
 						indices.push_back(size + 2);
 						indices.push_back(size + 3);
@@ -122,9 +98,82 @@ public:
 						vertices.push_back({ { nx, py, pz }, { 0, 0, 1 }, { UVS[value].z, UVS[value].y } });
 						vertices.push_back({ { px, ny, pz }, { 0, 0, 1 }, { UVS[value].x, UVS[value].w } });
 						vertices.push_back({ { px, py, pz }, { 0, 0, 1 }, { UVS[value].z, UVS[value].w } });
-						*/
+						
+						//Back face
+						size = vertices.size();
+
+						indices.push_back(size + 2);
+						indices.push_back(size + 3);
+						indices.push_back(size + 1);
+						indices.push_back(size + 2);
+						indices.push_back(size + 1);
+						indices.push_back(size);
+
+						vertices.push_back({ { px, ny, nz },{ 0, 0, -1 },{ UVS[value].x, UVS[value].y } });
+						vertices.push_back({ { px, py, nz },{ 0, 0, -1 },{ UVS[value].z, UVS[value].y } });
+						vertices.push_back({ { nx, ny, nz },{ 0, 0, -1 },{ UVS[value].x, UVS[value].w } });
+						vertices.push_back({ { nx, py, nz },{ 0, 0, -1 },{ UVS[value].z, UVS[value].w } });
+
+						//Top face
+						size = vertices.size();
+
+						indices.push_back(size + 1);
+						indices.push_back(size);
+						indices.push_back(size + 2);
+						indices.push_back(size + 1);
+						indices.push_back(size + 2);
+						indices.push_back(size + 3);
+
+						vertices.push_back({ { nx, py, pz },{ 0, 1, 0 },{ UVS[value].x, UVS[value].y } });
+						vertices.push_back({ { nx, py, nz },{ 0, 1, 0 },{ UVS[value].z, UVS[value].y } });
+						vertices.push_back({ { px, py, pz },{ 0, 1, 0 },{ UVS[value].x, UVS[value].w } });
+						vertices.push_back({ { px, py, nz },{ 0, 1, 0 },{ UVS[value].z, UVS[value].w } });
+
+						//Bottom face
+						size = vertices.size();
+
+						indices.push_back(size + 3);
+						indices.push_back(size + 1);
+						indices.push_back(size);
+						indices.push_back(size + 3);
+						indices.push_back(size);
+						indices.push_back(size + 2);
+
+						vertices.push_back({ { px, ny, pz },{ 0, -1, 0 },{ UVS[value].x, UVS[value].y } });
+						vertices.push_back({ { px, ny, nz },{ 0, -1, 0 },{ UVS[value].z, UVS[value].y } });
+						vertices.push_back({ { nx, ny, pz },{ 0, -1, 0 },{ UVS[value].x, UVS[value].w } });
+						vertices.push_back({ { nx, ny, nz },{ 0, -1, 0 },{ UVS[value].z, UVS[value].w } });
+
+						//Right face
+						size = vertices.size();
+
+						indices.push_back(size + 2);
+						indices.push_back(size + 3);
+						indices.push_back(size + 1);
+						indices.push_back(size + 2);
+						indices.push_back(size + 1);
+						indices.push_back(size);
+
+						vertices.push_back({ { px, ny, pz },{ 1, 0, 0 },{ UVS[value].x, UVS[value].y } });
+						vertices.push_back({ { px, py, pz },{ 1, 0, 0 },{ UVS[value].z, UVS[value].y } });
+						vertices.push_back({ { px, ny, nz },{ 1, 0, 0 },{ UVS[value].x, UVS[value].w } });
+						vertices.push_back({ { px, py, nz },{ 1, 0, 0 },{ UVS[value].z, UVS[value].w } });
+
+						//Left face
+						size = vertices.size();
+
+						indices.push_back(size);
+						indices.push_back(size + 2);
+						indices.push_back(size + 3);
+						indices.push_back(size);
+						indices.push_back(size + 3);
+						indices.push_back(size + 1);
+
+						vertices.push_back({ { nx, ny, nz },{ -1, 0, 0 },{ UVS[value].x, UVS[value].y } });
+						vertices.push_back({ { nx, py, nz },{ -1, 0, 0 },{ UVS[value].z, UVS[value].y } });
+						vertices.push_back({ { nx, ny, pz },{ -1, 0, 0 },{ UVS[value].x, UVS[value].w } });
+						vertices.push_back({ { nx, py, pz },{ -1, 0, 0 },{ UVS[value].z, UVS[value].w } });
 					}
-					
 				}
 			}
 		}
