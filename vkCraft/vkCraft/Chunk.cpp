@@ -17,14 +17,21 @@
 class Chunk
 {
 public:
-	static const int SIZE = 32;
-
+	static const int SIZE = 16;
+	
 	static const int EMPTY = 0;
+
+	//Block
 	static const int GRASS = 1;
 	static const int SAND = 2;
 	static const int STONE = 3;
 	static const int DIRT = 4;
-	static const int WATER = 4;
+	static const int WATER = 5;
+	static const int LAVA = 6;
+	
+	//Fooliage
+	static const int FLOWER_RED = 2001;
+	static const int FLOWER_YELLOW = 2002;
 
 	/**
 	 * Chunk data, constants defined in this class.
@@ -59,7 +66,7 @@ public:
 				int v = x + position.x * SIZE;
 				int w = z + position.z * SIZE;
 
-				int height = cos(v / 25.0) * 5.0 + cos(w / 20.0 * sin(v / 10.0) * 2.0) * 3.0;
+				int height = cos(v / 25.0) * 7.0 + cos(w / 20.0 * sin(v / 10.0) * 2.0) * 10.0;
 
 				for (int y = 0; y < SIZE; y++)
 				{

@@ -41,6 +41,7 @@
 
 #include "Chunk.cpp"
 #include "ChunkGeometry.cpp"
+#include "ChunkWorld.cpp"
 
 const int MAX_FRAMES_IN_FLIGHT = 1;
 
@@ -95,9 +96,9 @@ public:
 		std::cout << "Generating chunks" << std::endl;
 		clock_t begin = clock();
 
-		for (int x = -1; x < 1; x++)
+		for (int x = -3; x < 3; x++)
 		{
-			for (int z = -1; z < 1; z++)
+			for (int z = -3; z < 3; z++)
 			{
 				for (int y = -1; y < 1; y++)
 				{
@@ -1743,7 +1744,7 @@ int main()
 	}
 	catch (const std::runtime_error &error)
 	{
-		std::cerr << error.what() << std::endl;
+		std::cerr << "vkCraft: " << error.what() << std::endl;
 		return EXIT_FAILURE;
 	}
 

@@ -14,10 +14,7 @@
 #include "PlaneGeometry.cpp"
 #include "Vertex.cpp"
 #include "Chunk.cpp"
-
-//const std::vector<glm::vec3> FRONT_VERTEX = { { -0.5f, -0.5f, 0.5f },{ 0.5f, -0.5f, 0.5f },{ 0.5f, 0.5f, 0.5f },{ -0.5f, 0.5f, 0.5f } };
-//const glm::vec3 FRONT_NORMAL = {0, 0, 1};
-//const std::vector<int> FRONT_INDEX = {0, 2, 3, 0, 3, 1 };
+#include "Texture.cpp"
 
 /**
  * Geometry to represent a chunk in the world.
@@ -31,9 +28,18 @@ public:
 	const std::vector<glm::vec4> UVS =
 	{
 		{0.0f, 0.0f, 1.0f, 1.0f}, //EMPTY
-		{0.0f, 0.0f, 1/16.0f, 1/16.0f}, //GRASS
-		{1/16.0f, 0.0f,1/8.0f, 1/16.0f} //SAND
+		calculateUV(2, 0, 16), //GRASS
+		calculateUV(3, 3, 16) //SAND
 	};
+
+	/**
+	 * Calculate the UV for the element x, y in a grid with size.
+	 */
+	static glm::vec4 calculateUV(int x, int y, int size)
+	{
+		float step = 1.0 / size;
+		return glm::vec4(step * x, step * y, step * x + step, step * y + step);
+	}
 
 	/**
 	 * Chunk with the data to generate the geometry.
@@ -84,95 +90,113 @@ public:
 						float ny = -0.5f + iy;
 						float nz = -0.5f + iz;
 
-						//Front face
-						int size = vertices.size();
-
-						indices.push_back(size);
-						indices.push_back(size + 2);
-						indices.push_back(size + 3);
-						indices.push_back(size);
-						indices.push_back(size + 3);
-						indices.push_back(size + 1);
-
-						vertices.push_back({ { nx, ny, pz }, { 0, 0, 1 }, { UVS[value].x, UVS[value].y } });
-						vertices.push_back({ { nx, py, pz }, { 0, 0, 1 }, { UVS[value].z, UVS[value].y } });
-						vertices.push_back({ { px, ny, pz }, { 0, 0, 1 }, { UVS[value].x, UVS[value].w } });
-						vertices.push_back({ { px, py, pz }, { 0, 0, 1 }, { UVS[value].z, UVS[value].w } });
-						
-						//Back face
-						size = vertices.size();
-
-						indices.push_back(size + 2);
-						indices.push_back(size + 3);
-						indices.push_back(size + 1);
-						indices.push_back(size + 2);
-						indices.push_back(size + 1);
-						indices.push_back(size);
-
-						vertices.push_back({ { px, ny, nz },{ 0, 0, -1 },{ UVS[value].x, UVS[value].y } });
-						vertices.push_back({ { px, py, nz },{ 0, 0, -1 },{ UVS[value].z, UVS[value].y } });
-						vertices.push_back({ { nx, ny, nz },{ 0, 0, -1 },{ UVS[value].x, UVS[value].w } });
-						vertices.push_back({ { nx, py, nz },{ 0, 0, -1 },{ UVS[value].z, UVS[value].w } });
-
 						//Top face
-						size = vertices.size();
+						if (y == Chunk::SIZE - 1 || chunk->data[x][y + 1][z] == Chunk::EMPTY)
+						{
+							int size = vertices.size();
 
-						indices.push_back(size + 1);
-						indices.push_back(size);
-						indices.push_back(size + 2);
-						indices.push_back(size + 1);
-						indices.push_back(size + 2);
-						indices.push_back(size + 3);
+							indices.push_back(size + 1);
+							indices.push_back(size);
+							indices.push_back(size + 2);
+							indices.push_back(size + 1);
+							indices.push_back(size + 2);
+							indices.push_back(size + 3);
 
-						vertices.push_back({ { nx, py, pz },{ 0, 1, 0 },{ UVS[value].x, UVS[value].y } });
-						vertices.push_back({ { nx, py, nz },{ 0, 1, 0 },{ UVS[value].z, UVS[value].y } });
-						vertices.push_back({ { px, py, pz },{ 0, 1, 0 },{ UVS[value].x, UVS[value].w } });
-						vertices.push_back({ { px, py, nz },{ 0, 1, 0 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { nx, py, pz },{ 0, 1, 0 },{ UVS[value].x, UVS[value].y } });
+							vertices.push_back({ { nx, py, nz },{ 0, 1, 0 },{ UVS[value].z, UVS[value].y } });
+							vertices.push_back({ { px, py, pz },{ 0, 1, 0 },{ UVS[value].x, UVS[value].w } });
+							vertices.push_back({ { px, py, nz },{ 0, 1, 0 },{ UVS[value].z, UVS[value].w } });
+						}
 
 						//Bottom face
-						size = vertices.size();
+						if (y == 0 || chunk->data[x][y - 1][z] == Chunk::EMPTY)
+						{
+							int size = vertices.size();
 
-						indices.push_back(size + 3);
-						indices.push_back(size + 1);
-						indices.push_back(size);
-						indices.push_back(size + 3);
-						indices.push_back(size);
-						indices.push_back(size + 2);
+							indices.push_back(size + 3);
+							indices.push_back(size + 1);
+							indices.push_back(size);
+							indices.push_back(size + 3);
+							indices.push_back(size);
+							indices.push_back(size + 2);
 
-						vertices.push_back({ { px, ny, pz },{ 0, -1, 0 },{ UVS[value].x, UVS[value].y } });
-						vertices.push_back({ { px, ny, nz },{ 0, -1, 0 },{ UVS[value].z, UVS[value].y } });
-						vertices.push_back({ { nx, ny, pz },{ 0, -1, 0 },{ UVS[value].x, UVS[value].w } });
-						vertices.push_back({ { nx, ny, nz },{ 0, -1, 0 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { px, ny, pz },{ 0, -1, 0 },{ UVS[value].x, UVS[value].y } });
+							vertices.push_back({ { px, ny, nz },{ 0, -1, 0 },{ UVS[value].z, UVS[value].y } });
+							vertices.push_back({ { nx, ny, pz },{ 0, -1, 0 },{ UVS[value].x, UVS[value].w } });
+							vertices.push_back({ { nx, ny, nz },{ 0, -1, 0 },{ UVS[value].z, UVS[value].w } });
+						}
+
+						//Front face
+						if (z == Chunk::SIZE - 1 || chunk->data[x][y][z + 1] == Chunk::EMPTY)
+						{
+							int size = vertices.size();
+
+							indices.push_back(size);
+							indices.push_back(size + 2);
+							indices.push_back(size + 3);
+							indices.push_back(size);
+							indices.push_back(size + 3);
+							indices.push_back(size + 1);
+
+							vertices.push_back({ { nx, ny, pz },{ 0, 0, 1 },{ UVS[value].x, UVS[value].y } });
+							vertices.push_back({ { nx, py, pz },{ 0, 0, 1 },{ UVS[value].z, UVS[value].y } });
+							vertices.push_back({ { px, ny, pz },{ 0, 0, 1 },{ UVS[value].x, UVS[value].w } });
+							vertices.push_back({ { px, py, pz },{ 0, 0, 1 },{ UVS[value].z, UVS[value].w } });
+						}
+
+						//Back face
+						if (z == 0 || chunk->data[x][y][z - 1] == Chunk::EMPTY)
+						{
+							int size = vertices.size();
+
+							indices.push_back(size + 2);
+							indices.push_back(size + 3);
+							indices.push_back(size + 1);
+							indices.push_back(size + 2);
+							indices.push_back(size + 1);
+							indices.push_back(size);
+
+							vertices.push_back({ { px, ny, nz },{ 0, 0, -1 },{ UVS[value].x, UVS[value].y } });
+							vertices.push_back({ { px, py, nz },{ 0, 0, -1 },{ UVS[value].z, UVS[value].y } });
+							vertices.push_back({ { nx, ny, nz },{ 0, 0, -1 },{ UVS[value].x, UVS[value].w } });
+							vertices.push_back({ { nx, py, nz },{ 0, 0, -1 },{ UVS[value].z, UVS[value].w } });
+						}
 
 						//Right face
-						size = vertices.size();
+						if (x == Chunk::SIZE - 1 || chunk->data[x + 1][y][z] == Chunk::EMPTY)
+						{
+							int size = vertices.size();
 
-						indices.push_back(size + 2);
-						indices.push_back(size + 3);
-						indices.push_back(size + 1);
-						indices.push_back(size + 2);
-						indices.push_back(size + 1);
-						indices.push_back(size);
+							indices.push_back(size + 2);
+							indices.push_back(size + 3);
+							indices.push_back(size + 1);
+							indices.push_back(size + 2);
+							indices.push_back(size + 1);
+							indices.push_back(size);
 
-						vertices.push_back({ { px, ny, pz },{ 1, 0, 0 },{ UVS[value].x, UVS[value].y } });
-						vertices.push_back({ { px, py, pz },{ 1, 0, 0 },{ UVS[value].z, UVS[value].y } });
-						vertices.push_back({ { px, ny, nz },{ 1, 0, 0 },{ UVS[value].x, UVS[value].w } });
-						vertices.push_back({ { px, py, nz },{ 1, 0, 0 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { px, ny, pz },{ 1, 0, 0 },{ UVS[value].x, UVS[value].y } });
+							vertices.push_back({ { px, py, pz },{ 1, 0, 0 },{ UVS[value].z, UVS[value].y } });
+							vertices.push_back({ { px, ny, nz },{ 1, 0, 0 },{ UVS[value].x, UVS[value].w } });
+							vertices.push_back({ { px, py, nz },{ 1, 0, 0 },{ UVS[value].z, UVS[value].w } });
+						}
 
 						//Left face
-						size = vertices.size();
+						if (x == 0 || chunk->data[x - 1][y][z] == Chunk::EMPTY)
+						{
+							int size = vertices.size();
 
-						indices.push_back(size);
-						indices.push_back(size + 2);
-						indices.push_back(size + 3);
-						indices.push_back(size);
-						indices.push_back(size + 3);
-						indices.push_back(size + 1);
+							indices.push_back(size);
+							indices.push_back(size + 2);
+							indices.push_back(size + 3);
+							indices.push_back(size);
+							indices.push_back(size + 3);
+							indices.push_back(size + 1);
 
-						vertices.push_back({ { nx, ny, nz },{ -1, 0, 0 },{ UVS[value].x, UVS[value].y } });
-						vertices.push_back({ { nx, py, nz },{ -1, 0, 0 },{ UVS[value].z, UVS[value].y } });
-						vertices.push_back({ { nx, ny, pz },{ -1, 0, 0 },{ UVS[value].x, UVS[value].w } });
-						vertices.push_back({ { nx, py, pz },{ -1, 0, 0 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { nx, ny, nz },{ -1, 0, 0 },{ UVS[value].x, UVS[value].y } });
+							vertices.push_back({ { nx, py, nz },{ -1, 0, 0 },{ UVS[value].z, UVS[value].y } });
+							vertices.push_back({ { nx, ny, pz },{ -1, 0, 0 },{ UVS[value].x, UVS[value].w } });
+							vertices.push_back({ { nx, py, pz },{ -1, 0, 0 },{ UVS[value].z, UVS[value].w } });
+						}
 					}
 				}
 			}

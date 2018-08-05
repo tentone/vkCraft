@@ -2,16 +2,19 @@
 
 #include <vector>
 
-#include "Chunk.cpp"
+#include "ChunkGeometry.cpp"
 
 class ChunkWorld
 {
 public:
-	std::vector<Chunk> chunks;
-	double waterLevel = 0.0f;
+	std::vector<ChunkGeometry*> chunks;
 
 	ChunkWorld()
 	{
 		
+	}
+
+	void generateChunks()
+	{
 	}
 };
