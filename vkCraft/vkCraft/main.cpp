@@ -357,13 +357,16 @@ public:
 		createTextureImage("texture/minecraft.png");
 		texture.createSampler(&device.logical, &textureSampler);
 
+		//Geometry buffers
 		for (int i = 0; i < geometry.size(); i++)
 		{
 			createVertexBuffer(geometry[i]);
 			createIndexBuffer(geometry[i]);
 		}
-
-		createUniformBuffer();
+		
+		//Create uniform buffer
+		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer, uniformBufferMemory);
 
 		//Descriptors
 		createDescriptorPool();
@@ -1042,12 +1045,6 @@ public:
 
 		vkDestroyBuffer(device.logical, stagingBuffer, nullptr);
 		vkFreeMemory(device.logical, stagingBufferMemory, nullptr);
-	}
-
-	void createUniformBuffer()
-	{
-		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer, uniformBufferMemory);
 	}
 
 	void createDescriptorPool()
