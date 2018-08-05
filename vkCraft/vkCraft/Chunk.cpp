@@ -201,17 +201,17 @@ public:
 	{
 		if (z > WATER_LEVEL)
 		{
-			if (z > height) { return 0; } // air
-			if (z == height) { return 3; } // it's probably grass block
-			if (z > height - 7) { return 2; } // and it's probably dirt
-			return 6;// stone?
+			if (z > height) { return EMPTY; } // air
+			if (z == height) { return GRASS; } // it's probably grass block
+			if (z > height - 7) { return DIRT; } // and it's probably dirt
+			return STONE;// stone?
 		}
 		else
 		{
-			if ((z > height + 5)) { return 5; } // water?
-			if ((z > height - 5)) { return 1; } // sand?
-			if ((z > height - 10)) { return 2; } //dirt?
-			return 6; // stone?
+			if ((z > height + 5)) { return WATER; } // water?
+			if ((z > height - 5)) { return SAND; } // sand?
+			if ((z > height - 10)) { return DIRT; } //dirt?
+			return STONE; // stone?
 		}
 	}
 };
