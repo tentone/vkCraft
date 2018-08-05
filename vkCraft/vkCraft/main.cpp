@@ -96,11 +96,11 @@ public:
 		std::cout << "Generating chunks" << std::endl;
 		clock_t begin = clock();
 
-		for (int x = -3; x < 3; x++)
+		for (int x = -20; x < 20; x++)
 		{
-			for (int z = -3; z < 3; z++)
+			for (int z = -20; z < 20; z++)
 			{
-				for (int y = -1; y < 1; y++)
+				for (int y = -5; y < 5; y++)
 				{
 					Chunk chunk = Chunk(glm::ivec3(x, y, z));
 					Geometry *geo = new ChunkGeometry(&chunk);
@@ -1005,7 +1005,13 @@ public:
 	//Create vertex buffer
 	void createVertexBuffer(Geometry *geometry)
 	{
-		VkDeviceSize bufferSize = sizeof(geometry->vertices[0]) * geometry->vertices.size();
+		if (geometry->vertices.size() == 0)
+		{
+			std::cout << "vkCraft: Empty geometry vertex" << std::endl;
+			return;
+		}
+
+		VkDeviceSize bufferSize = sizeof(Vertex) * geometry->vertices.size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1029,7 +1035,13 @@ public:
 	//Create index buffer
 	void createIndexBuffer(Geometry *geometry)
 	{
-		VkDeviceSize bufferSize = sizeof(geometry->indices[0]) * geometry->indices.size();
+		if (geometry->indices.size() == 0)
+		{
+			std::cout << "vkCraft: Empty geometry index list" << std::endl;
+			return;
+		}
+
+		VkDeviceSize bufferSize = sizeof(uint32_t) * geometry->indices.size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1429,27 +1441,18 @@ public:
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 			
-			/*
-			//Draw geometry
-			VkBuffer vertexBuffers[] = { geometry[0]->vertexBuffer };
-			
-
-			VkBuffer vertexBuffers[] = { geometry[0]->vertexBuffer };
 			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-			vkCmdBindIndexBuffer(commandBuffers[i], geometry[0]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry[0]->indices.size()), 1, 0, 0, 0);
-			*/
 
+			//Draw all geometries
 			for (int j = 0; j < geometry.size(); j++)
-			{
-				VkDeviceSize offsets[] = { 0 };
-
-				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(geometry[j]->vertexBuffer), offsets);
-				vkCmdBindIndexBuffer(commandBuffers[i], geometry[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry[j]->indices.size()), 1, 0, 0, 0);
+			{	
+				if (geometry[j]->isReady())
+				{
+					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(geometry[j]->vertexBuffer), offsets);
+					vkCmdBindIndexBuffer(commandBuffers[i], geometry[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+					vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry[j]->indices.size()), 1, 0, 0, 0);
+				}
 			}
 
 			//End rendering

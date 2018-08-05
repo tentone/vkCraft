@@ -6,27 +6,42 @@
 #include "Device.cpp"
 #include "BufferUtils.cpp"
 
+/**
+ * Stores geometry data and correspondent buffers.
+ */
 class Geometry
 {
 public:
 	//Vertex
 	std::vector<Vertex> vertices;
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
+	VkBuffer vertexBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
 
 	//Indices
 	std::vector<uint32_t> indices;
-	VkBuffer indexBuffer;
-	VkDeviceMemory indexBufferMemory;
+	VkBuffer indexBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 
-	//Method to generate the geometry index and vertex data
+	/**
+	 * Method to generate the geometry index and vertex data.
+	 */
 	virtual void generate()
 	{
 		vertices = {};
 		indices = {};
 	}
 
-	//Apply a matrix transformation to the geometry vertex position
+	/**
+	 * Check if geometry is ready to be drawn by the renderer.
+	 */
+	bool isReady()
+	{
+		return vertexBuffer != VK_NULL_HANDLE && indexBuffer != VK_NULL_HANDLE;
+	}
+
+	/**
+	 * Apply a matrix transformation to the geometry vertex position.
+	 */
 	void applyTransformationMatrix(glm::mat4 matrix)
 	{
 		for (int i = 0; i < vertices.size(); i++)
@@ -39,7 +54,9 @@ public:
 		}
 	}
 
-	//Append another geometry data to this geometry
+	/**
+	 * Append another geometry data to this geometry.
+	 */
 	void merge(Geometry *geometry)
 	{
 		int initialSize = vertices.size();
@@ -55,7 +72,9 @@ public:
 		}
 	}
 
-	//Dispose the geometry
+	/**
+	 * Dispose the geometry.
+	 */
 	void dispose(VkDevice device)
 	{
 		vkDestroyBuffer(device, vertexBuffer, nullptr);
