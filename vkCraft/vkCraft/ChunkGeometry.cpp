@@ -8,7 +8,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include <vector>
-#include <map>
+#include <array>
 
 #include "Geometry.cpp"
 #include "BoxGeometry.cpp"
@@ -26,33 +26,21 @@ public:
 	/**
 	 * List of UV's for the blocks.
 	 */
-	const std::vector<glm::vec4> UVS =	{
+	const glm::vec4 BLOCK_UVS[7]=
+	{
 		calculateUV(12, 14, 16), //EMPTY
 		calculateUV(0, 0, 16), //GRASS
 		calculateUV(2, 1, 16), //SAND
 		calculateUV(1, 0, 16), //STONE
 		calculateUV(2, 0, 16), //DIRT
 		calculateUV(15, 13, 16), //WATER
-		calculateUV(15, 15, 16) //LAVA	};
-
-	/*
-	const std::map<int, glm::vec4> BLOCK_UVS =
-	{
-		{ Chunk::EMPTY, calculateUV(12, 14, 16) },
-		{ Chunk::GRASS, calculateUV(0, 0, 16) },
-		{ Chunk::SAND, calculateUV(2, 1, 16) },
-		{ Chunk::STONE, calculateUV(1, 0, 16) },
-		{ Chunk::DIRT, calculateUV(2, 0, 16) },
-		{ Chunk::WATER, calculateUV(15, 13, 16) },
-		{ Chunk::LAVA, calculateUV(15, 15, 16) },
-		{ Chunk::CLOUDS, calculateUV(2, 4, 16) }
+		calculateUV(15, 15, 16) //LAVA
 	};
-	*/
 
 	/**
 	* List of UV's for the fooliage.
 	*/
-	const std::vector<glm::vec4> FLOOLIAGE_UVS =
+	const glm::vec4 FLOOLIAGE_UVS[2] =
 	{
 		calculateUV(12, 0, 16), //FLOWER_RED
 		calculateUV(13, 0, 16) //FLOWER_YELLOW

@@ -19,6 +19,7 @@ class Chunk
 public:
 	static const int SIZE = 16;
 	static const int WATER_LEVEL = 0;
+	static const int CLOUD_LEVEL = SIZE * 2;
 
 	static const int EMPTY = 0;
 
