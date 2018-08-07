@@ -42,12 +42,17 @@ public:
 	 */
 	void update(GLFWwindow *window, double time)
 	{
-		float moveSpeed = 5.0f * time;
+		float moveSpeed = 10.0f * time;
 		float lookSpeed = 1.0f * time;
 
 		float pi = 3.14159265359f;
 		float pid2 = pi / 2.0f;
 		
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		{
+			moveSpeed *= 3.0f;
+		}
+
 		//Camera move
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{

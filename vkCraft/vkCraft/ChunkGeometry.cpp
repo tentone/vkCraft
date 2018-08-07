@@ -8,6 +8,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include <vector>
+#include <map>
 
 #include "Geometry.cpp"
 #include "BoxGeometry.cpp"
@@ -23,17 +24,38 @@ class ChunkGeometry : public Geometry
 {
 public:
 	/**
-	 * List of UV's for the materials.
+	 * List of UV's for the blocks.
 	 */
-	const std::vector<glm::vec4> UVS =
-	{
-		{0.0f, 0.0f, 1.0f, 1.0f}, //EMPTY
+	const std::vector<glm::vec4> UVS =	{
+		calculateUV(12, 14, 16), //EMPTY
 		calculateUV(0, 0, 16), //GRASS
 		calculateUV(2, 1, 16), //SAND
 		calculateUV(1, 0, 16), //STONE
 		calculateUV(2, 0, 16), //DIRT
 		calculateUV(15, 13, 16), //WATER
-		calculateUV(15, 15, 16) //LAVA
+		calculateUV(15, 15, 16) //LAVA	};
+
+	/*
+	const std::map<int, glm::vec4> BLOCK_UVS =
+	{
+		{ Chunk::EMPTY, calculateUV(12, 14, 16) },
+		{ Chunk::GRASS, calculateUV(0, 0, 16) },
+		{ Chunk::SAND, calculateUV(2, 1, 16) },
+		{ Chunk::STONE, calculateUV(1, 0, 16) },
+		{ Chunk::DIRT, calculateUV(2, 0, 16) },
+		{ Chunk::WATER, calculateUV(15, 13, 16) },
+		{ Chunk::LAVA, calculateUV(15, 15, 16) },
+		{ Chunk::CLOUDS, calculateUV(2, 4, 16) }
+	};
+	*/
+
+	/**
+	* List of UV's for the fooliage.
+	*/
+	const std::vector<glm::vec4> FLOOLIAGE_UVS =
+	{
+		calculateUV(12, 0, 16), //FLOWER_RED
+		calculateUV(13, 0, 16) //FLOWER_YELLOW
 	};
 
 	/**
@@ -106,10 +128,10 @@ public:
 							indices.push_back(size + 2);
 							indices.push_back(size + 3);
 
-							vertices.push_back({ { nx, py, pz },{ 0, 1, 0 },{ UVS[value].x, UVS[value].y } });
-							vertices.push_back({ { nx, py, nz },{ 0, 1, 0 },{ UVS[value].z, UVS[value].y } });
-							vertices.push_back({ { px, py, pz },{ 0, 1, 0 },{ UVS[value].x, UVS[value].w } });
-							vertices.push_back({ { px, py, nz },{ 0, 1, 0 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { nx, py, pz },{ 0, 1, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].y } });
+							vertices.push_back({ { nx, py, nz },{ 0, 1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
+							vertices.push_back({ { px, py, pz },{ 0, 1, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
+							vertices.push_back({ { px, py, nz },{ 0, 1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
 						}
 
 						//Bottom face
@@ -124,10 +146,10 @@ public:
 							indices.push_back(size);
 							indices.push_back(size + 2);
 
-							vertices.push_back({ { px, ny, pz },{ 0, -1, 0 },{ UVS[value].x, UVS[value].y } });
-							vertices.push_back({ { px, ny, nz },{ 0, -1, 0 },{ UVS[value].z, UVS[value].y } });
-							vertices.push_back({ { nx, ny, pz },{ 0, -1, 0 },{ UVS[value].x, UVS[value].w } });
-							vertices.push_back({ { nx, ny, nz },{ 0, -1, 0 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { px, ny, pz },{ 0, -1, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].y } });
+							vertices.push_back({ { px, ny, nz },{ 0, -1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
+							vertices.push_back({ { nx, ny, pz },{ 0, -1, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
+							vertices.push_back({ { nx, ny, nz },{ 0, -1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
 						}
 
 						//Front face
@@ -142,10 +164,10 @@ public:
 							indices.push_back(size + 3);
 							indices.push_back(size + 1);
 
-							vertices.push_back({ { nx, ny, pz },{ 0, 0, 1 },{ UVS[value].x, UVS[value].y } });
-							vertices.push_back({ { nx, py, pz },{ 0, 0, 1 },{ UVS[value].z, UVS[value].y } });
-							vertices.push_back({ { px, ny, pz },{ 0, 0, 1 },{ UVS[value].x, UVS[value].w } });
-							vertices.push_back({ { px, py, pz },{ 0, 0, 1 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { nx, ny, pz },{ 0, 0, 1 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].y } });
+							vertices.push_back({ { nx, py, pz },{ 0, 0, 1 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
+							vertices.push_back({ { px, ny, pz },{ 0, 0, 1 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
+							vertices.push_back({ { px, py, pz },{ 0, 0, 1 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
 						}
 
 						//Back face
@@ -160,10 +182,10 @@ public:
 							indices.push_back(size + 1);
 							indices.push_back(size);
 
-							vertices.push_back({ { px, ny, nz },{ 0, 0, -1 },{ UVS[value].x, UVS[value].y } });
-							vertices.push_back({ { px, py, nz },{ 0, 0, -1 },{ UVS[value].z, UVS[value].y } });
-							vertices.push_back({ { nx, ny, nz },{ 0, 0, -1 },{ UVS[value].x, UVS[value].w } });
-							vertices.push_back({ { nx, py, nz },{ 0, 0, -1 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { px, ny, nz },{ 0, 0, -1 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].y } });
+							vertices.push_back({ { px, py, nz },{ 0, 0, -1 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
+							vertices.push_back({ { nx, ny, nz },{ 0, 0, -1 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
+							vertices.push_back({ { nx, py, nz },{ 0, 0, -1 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
 						}
 
 						//Right face
@@ -178,10 +200,10 @@ public:
 							indices.push_back(size + 1);
 							indices.push_back(size);
 
-							vertices.push_back({ { px, ny, pz },{ 1, 0, 0 },{ UVS[value].x, UVS[value].y } });
-							vertices.push_back({ { px, py, pz },{ 1, 0, 0 },{ UVS[value].z, UVS[value].y } });
-							vertices.push_back({ { px, ny, nz },{ 1, 0, 0 },{ UVS[value].x, UVS[value].w } });
-							vertices.push_back({ { px, py, nz },{ 1, 0, 0 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { px, ny, pz },{ 1, 0, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].y } });
+							vertices.push_back({ { px, py, pz },{ 1, 0, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
+							vertices.push_back({ { px, ny, nz },{ 1, 0, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
+							vertices.push_back({ { px, py, nz },{ 1, 0, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
 						}
 
 						//Left face
@@ -196,10 +218,10 @@ public:
 							indices.push_back(size + 3);
 							indices.push_back(size + 1);
 
-							vertices.push_back({ { nx, ny, nz },{ -1, 0, 0 },{ UVS[value].x, UVS[value].y } });
-							vertices.push_back({ { nx, py, nz },{ -1, 0, 0 },{ UVS[value].z, UVS[value].y } });
-							vertices.push_back({ { nx, ny, pz },{ -1, 0, 0 },{ UVS[value].x, UVS[value].w } });
-							vertices.push_back({ { nx, py, pz },{ -1, 0, 0 },{ UVS[value].z, UVS[value].w } });
+							vertices.push_back({ { nx, ny, nz },{ -1, 0, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].y } });
+							vertices.push_back({ { nx, py, nz },{ -1, 0, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
+							vertices.push_back({ { nx, ny, pz },{ -1, 0, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
+							vertices.push_back({ { nx, py, pz },{ -1, 0, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
 						}
 					}
 				}

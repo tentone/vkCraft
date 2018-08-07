@@ -29,11 +29,12 @@ public:
 	static const int DIRT = 4;
 	static const int WATER = 5;
 	static const int LAVA = 6;
+	static const int CLOUDS = 7;
 	
 	//Fooliage
-	static const int FLOWER_RED = 2001;
-	static const int FLOWER_YELLOW = 2002;
-	static const int TREE = 2003;
+	static const int FLOWER_RED = 500;
+	static const int FLOWER_YELLOW = 501;
+	static const int BIRCH = 502;
 
 	/**
 	 * Chunk data, constants defined in this class.
@@ -138,18 +139,15 @@ public:
 	}
 
 	//Perlin noise generator
-	double findNoise1(int n, int seed)
-	{
-		n += seed;
-		n = (n << 13) ^ n;
-		unsigned int nn = (n * (n * n * 60493 + 19990303) + 1376312589);
-		return 1.0 - ((double)nn / 1073741824.0);
-	}
-
-	double findNoise2(double x, double y, int seed)
+	double findNoise(double x, double y, int seed)
 	{
 		int n = (int)x + (int)y * 57;
-		return findNoise1(n, seed);
+		n += seed;
+		n = (n << 13) ^ n;
+
+		unsigned int nn = (n * (n * n * 60493 + 19990303) + 1376312589);
+		
+		return 1.0 - ((double)nn / 1073741824.0);
 	}
 
 	double interpolate(double a, double b, double x)
@@ -168,10 +166,10 @@ public:
 		double s, t, u, v;
 
 		//Get the surrounding pixels to calculate the transition.
-		s = findNoise2(floorx, floory, seed);
-		t = findNoise2(floorx + 1, floory, seed);
-		u = findNoise2(floorx, floory + 1, seed);
-		v = findNoise2(floorx + 1, floory + 1, seed);
+		s = findNoise(floorx, floory, seed);
+		t = findNoise(floorx + 1, floory, seed);
+		u = findNoise(floorx, floory + 1, seed);
+		v = findNoise(floorx + 1, floory + 1, seed);
 
 		//Interpolate between the values.
 		double int1 = interpolate(s, t, x - floorx);
