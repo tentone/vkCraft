@@ -26,7 +26,7 @@ public:
 	/**
 	 * List of UV's for the blocks.
 	 */
-	const glm::vec4 BLOCK_UVS[7]=
+	const glm::vec4 BLOCK_UVS[8]=
 	{
 		calculateUV(12, 14, 16), //EMPTY
 		calculateUV(0, 0, 16), //GRASS
@@ -34,7 +34,8 @@ public:
 		calculateUV(1, 0, 16), //STONE
 		calculateUV(2, 0, 16), //DIRT
 		calculateUV(15, 13, 16), //WATER
-		calculateUV(15, 15, 16) //LAVA
+		calculateUV(15, 15, 16), //LAVA
+		calculateUV(2, 4, 16) //CLOUD
 	};
 
 	/**

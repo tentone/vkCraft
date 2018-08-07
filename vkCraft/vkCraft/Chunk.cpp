@@ -18,8 +18,8 @@ class Chunk
 {
 public:
 	static const int SIZE = 16;
-	static const int WATER_LEVEL = 0;
-	static const int CLOUD_LEVEL = SIZE * 2;
+	static const int WATER_LEVEL = -5;
+	static const int CLOUD_LEVEL = SIZE * 3;
 
 	static const int EMPTY = 0;
 
@@ -30,7 +30,7 @@ public:
 	static const int DIRT = 4;
 	static const int WATER = 5;
 	static const int LAVA = 6;
-	static const int CLOUDS = 7;
+	static const int CLOUD = 7;
 	
 	//Fooliage
 	static const int FLOWER_RED = 500;
@@ -79,19 +79,31 @@ public:
 			{
 				int v = x + position.x * SIZE;
 				int w = z + position.z * SIZE;
-				int noise = getHeight(v, w, seed);
+
+				int terrain = getHeight(v, w, 782364);
 
 				for (int y = 0; y < SIZE; y++)
 				{
 					int h = y + position.y * SIZE;
-					data[x][y][z] = getBlock(h, noise);
+
+					//Generate terrain
+					data[x][y][z] = getBlock(h, terrain);
+
+					//Generate clouds
+					if (h == CLOUD_LEVEL)
+					{
+						int cloud = getHeight(v, w, 87458) * 3; //sin((v + w) / 50.0) * cos(v / 3.0) * CLOUD_LEVEL / 2.0 + cos(w / 20.0 * sin(v / 10.0) * 2.0) * CLOUD_LEVEL;
+
+						if (cloud > CLOUD_LEVEL)
+						{
+							data[x][y][z] = CLOUD;
+						}
+					}
 				}
 			}
 		}
-		/*
-
-		*/
-
+		
+		//Sinosoidal generator
 		/*
 		for (int x = 0; x < SIZE; x++)
 		{
@@ -210,8 +222,8 @@ public:
 			noise += getNoise(((double)x) * frequency / zoom, ((double)y) / zoom * frequency, seed) * amplitude;
 		}
 
-		double maxHeight = SIZE * 4;
-		double minHeight = 0;
+		double maxHeight = SIZE * 4.0;
+		double minHeight = 0.0;
 
 		return (int)(((noise + 1) / 2.0) * (maxHeight - minHeight));
 	}

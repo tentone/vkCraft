@@ -96,11 +96,11 @@ public:
 		std::cout << "Generating chunks" << std::endl;
 		clock_t begin = clock();
 
-		for (int x = -20; x < 20; x++)
+		for (int x = -25; x < 25; x++)
 		{
-			for (int z = -20; z < 20; z++)
+			for (int z = -25; z < 25; z++)
 			{
-				for (int y = -5; y < 4; y++)
+				for (int y = -1; y < 4; y++)
 				{
 					Chunk chunk = Chunk(glm::ivec3(x, y, z));
 					Geometry *geo = new ChunkGeometry(&chunk);
@@ -1007,7 +1007,7 @@ public:
 	{
 		if (geometry->vertices.size() == 0)
 		{
-			std::cout << "vkCraft: Empty geometry vertex" << std::endl;
+			//std::cout << "vkCraft: Empty geometry vertex" << std::endl;
 			return;
 		}
 
@@ -1037,7 +1037,7 @@ public:
 	{
 		if (geometry->indices.size() == 0)
 		{
-			std::cout << "vkCraft: Empty geometry index list" << std::endl;
+			//std::cout << "vkCraft: Empty geometry index list" << std::endl;
 			return;
 		}
 
