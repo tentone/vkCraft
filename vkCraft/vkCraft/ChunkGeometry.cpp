@@ -28,9 +28,9 @@ public:
 	const std::vector<glm::vec4> UVS =
 	{
 		{0.0f, 0.0f, 1.0f, 1.0f}, //EMPTY
-		calculateUV(3, 0, 16), //GRASS
+		calculateUV(0, 0, 16), //GRASS
 		calculateUV(2, 1, 16), //SAND
-		calculateUV(0, 0, 16), //STONE
+		calculateUV(1, 0, 16), //STONE
 		calculateUV(2, 0, 16), //DIRT
 		calculateUV(15, 13, 16), //WATER
 		calculateUV(15, 15, 16) //LAVA

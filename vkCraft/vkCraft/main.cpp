@@ -100,7 +100,7 @@ public:
 		{
 			for (int z = -20; z < 20; z++)
 			{
-				for (int y = -5; y < 5; y++)
+				for (int y = -5; y < 4; y++)
 				{
 					Chunk chunk = Chunk(glm::ivec3(x, y, z));
 					Geometry *geo = new ChunkGeometry(&chunk);
@@ -1424,7 +1424,7 @@ public:
 			}
 
 			std::array<VkClearValue, 2> clearValues = {};
-			clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+			clearValues[0].color = { 0.4f, 0.6f, 1.0f, 1.0f };
 			clearValues[1].depthStencil = { 1.0f, 0 };
 
 			//Render initialization
@@ -1443,7 +1443,10 @@ public:
 			
 			VkDeviceSize offsets[] = { 0 };
 
-			//Draw all geometries
+			//Sky geometry
+			//TODO <ADD CODE HERE>
+
+			//Chunk geometry
 			for (int j = 0; j < geometry.size(); j++)
 			{	
 				if (geometry[j]->isReady())
@@ -1454,6 +1457,12 @@ public:
 					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry[j]->indices.size()), 1, 0, 0, 0);
 				}
 			}
+			
+			//Water geometry
+			//TODO <ADD CODE HERE>
+
+			//Cloud geometry
+			//TODO <ADD CODE HERE>
 
 			//End rendering
 			vkCmdEndRenderPass(commandBuffers[i]);
