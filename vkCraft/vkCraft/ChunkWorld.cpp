@@ -7,14 +7,10 @@
 class ChunkWorld
 {
 public:
-	std::vector<ChunkGeometry*> chunks;
-
-	ChunkWorld()
-	{
-		
-	}
+	std::vector<std::vector<std::vector<Chunk*>>> chunks;
 
 	void generateChunks()
 	{
+
 	}
 };

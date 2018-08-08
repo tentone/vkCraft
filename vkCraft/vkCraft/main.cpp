@@ -164,8 +164,6 @@ public:
 
 	//MERGE INTO SINGLE CLASS
 	Texture texture;
-
-	//Texture sampler
 	VkSampler textureSampler = VK_NULL_HANDLE;
 
 	//Depth buffer
@@ -208,6 +206,8 @@ public:
 		vkDeviceWaitIdle(device.logical);
 	}
 
+	bool stateR = false;
+
 	//Update the uniform buffers (and run some logic)
 	void update()
 	{
@@ -223,6 +223,14 @@ public:
 		{
 			model.rotation.y += 0.0001f;
 		}
+
+		if (stateR == false && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			std::cout << "vkCraft: Recreate rendering command buffers." << std::endl;
+			createRenderingCommandBuffers();
+		}
+
+		stateR = glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS;
 
 		model.updateMatrix();
 			
@@ -379,7 +387,10 @@ public:
 		//Semaphores
 		createSyncObjects();
 	}
-
+	
+	/**
+	 * Recreate the hole swap chain.
+	 */
 	void recreateSwapChain()
 	{
 		int width, height;
@@ -1396,6 +1407,8 @@ public:
 		throw std::runtime_error("vkCraft: Failed to find supported format!");
 	}
 
+	int maxGeometries = 2;
+
 	//Create the actual draw command buffer
 	void createRenderingCommandBuffers()
 	{
@@ -1445,9 +1458,11 @@ public:
 
 			//Sky geometry
 			//TODO <ADD CODE HERE>
+			
+			maxGeometries += 20;
 
 			//Chunk geometry
-			for (int j = 0; j < geometry.size(); j++)
+			for (int j = 0; j < geometry.size() && j < maxGeometries; j++)
 			{	
 				if (geometry[j]->isReady())
 				{

@@ -102,103 +102,13 @@ public:
 				}
 			}
 		}
-		
-		//Sinosoidal generator
-		/*
-		for (int x = 0; x < SIZE; x++)
-		{
-			for (int z = 0; z < SIZE; z++)
-			{
-				int v = x + position.x * SIZE;
-				int w = z + position.z * SIZE;
-
-				int height = sin((v + w) / 50.0) * cos(v / 300.0) * 7.0 + cos(w / 20.0 * sin(v / 10.0) * 2.0) * 10.0;
-
-				for (int y = 0; y < SIZE; y++)
-				{
-					int h = y + position.y * SIZE;
-
-					if (h < height)
-					{
-						data[x][y][z] = GRASS;
-					}
-					else
-					{
-						data[x][y][z] = EMPTY;
-					}
-				}
-			}
-		}
-
-		for (int x = 0; x < SIZE; x++)
-		{
-			for (int z = 0; z < SIZE; z++)
-			{
-				int last = data[x][0][z];
-
-				for (int y = 0; y < SIZE; y++)
-				{
-					if (last != data[x][y][z])
-					{
-						data[x][y][z] = SAND;
-						break;
-					}
-
-					last = data[x][y][z];
-				}
-			}
-		}
-		*/
-	}
-
-	//Perlin noise generator
-	double findNoise(double x, double y, int seed)
-	{
-		int n = (int)x + (int)y * 57;
-		n += seed;
-		n = (n << 13) ^ n;
-
-		unsigned int nn = (n * (n * n * 60493 + 19990303) + 1376312589);
-		
-		return 1.0 - ((double)nn / 1073741824.0);
-	}
-
-	double interpolate(double a, double b, double x)
-	{
-		double ft = x * 3.1415927;
-		double f = (1.0 - cos(ft)) * 0.5;
-		return a * (1.0 - f) + b * f;
-	}
-
-	double getNoise(double x, double y, int seed)
-	{
-		double floorx = (double)((int)x);
-		double floory = (double)((int)y);
-
-		//Integer declaration
-		double s, t, u, v;
-
-		//Get the surrounding pixels to calculate the transition.
-		s = findNoise(floorx, floory, seed);
-		t = findNoise(floorx + 1, floory, seed);
-		u = findNoise(floorx, floory + 1, seed);
-		v = findNoise(floorx + 1, floory + 1, seed);
-
-		//Interpolate between the values.
-		double int1 = interpolate(s, t, x - floorx);
-
-		//Use x-floorx, to get 1st dimension, it's part of the cosine formula.
-		double int2 = interpolate(u, v, x - floorx);
-
-		//Use y-floory, to get the 2nd dimension.
-		return interpolate(int1, int2, y - floory);
 	}
 
 	/**
-	 * Here we get how terrain at X, Y is high. zoomget is only for some testing reasons.
-	 * Here you can edit maximum and minimum level of height.
-	 * Also here you pass seed. It's int.
-	 */
+	* Here we get how terrain at X, Y is high. zoomget is only for some testing reasons.
+	* Here you can edit maximum and minimum level of height.
+	* Also here you pass seed. It's int.
+	*/
 	int getHeight(int x, int y, int seed, double zoomget = 150)
 	{
 		double frequencyPower = 2.0;
@@ -226,6 +136,54 @@ public:
 		double minHeight = 0.0;
 
 		return (int)(((noise + 1) / 2.0) * (maxHeight - minHeight));
+	}
+
+	double findNoise(double x, double z, int seed)
+	{
+		int n = (int)x + (int)z * 57;
+		n += seed;
+		n = (n << 13) ^ n;
+
+		unsigned int nn = (n * (n * n * 60493 + 19990303) + 1376312589);
+		
+		return 1.0 - ((double)nn / 1073741824.0);
+	}
+	
+	/**
+	 * Interpolate values.
+	 */
+	double interpolate(double a, double b, double x)
+	{
+		double ft = x * 3.1415927;
+		double f = (1.0 - cos(ft)) * 0.5;
+		return a * (1.0 - f) + b * f;
+	}
+
+	/**
+	* Get perlin noise for x, z values.
+	*/
+	double getNoise(double x, double z, int seed)
+	{
+		double floorx = (double)((int)x);
+		double floory = (double)((int)z);
+
+		//Integer declaration
+		double s, t, u, v;
+
+		//Get the surrounding pixels to calculate the transition.
+		s = findNoise(floorx, floory, seed);
+		t = findNoise(floorx + 1, floory, seed);
+		u = findNoise(floorx, floory + 1, seed);
+		v = findNoise(floorx + 1, floory + 1, seed);
+
+		//Interpolate between the values.
+		double int1 = interpolate(s, t, x - floorx);
+
+		//Use x-floorx, to get 1st dimension, it's part of the cosine formula.
+		double int2 = interpolate(u, v, x - floorx);
+
+		//Use y-floory, to get the 2nd dimension.
+		return interpolate(int1, int2, z - floory);
 	}
 
 	/** 
