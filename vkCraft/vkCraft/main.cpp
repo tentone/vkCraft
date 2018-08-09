@@ -41,7 +41,6 @@
 
 #include "Chunk.cpp"
 #include "ChunkGeometry.cpp"
-#include "ChunkWorld.cpp"
 
 const int MAX_FRAMES_IN_FLIGHT = 1;
 
@@ -1407,8 +1406,6 @@ public:
 		throw std::runtime_error("vkCraft: Failed to find supported format!");
 	}
 
-	int maxGeometries = 2;
-
 	//Create the actual draw command buffer
 	void createRenderingCommandBuffers()
 	{
@@ -1458,11 +1455,9 @@ public:
 
 			//Sky geometry
 			//TODO <ADD CODE HERE>
-			
-			maxGeometries += 20;
 
 			//Chunk geometry
-			for (int j = 0; j < geometry.size() && j < maxGeometries; j++)
+			for (int j = 0; j < geometry.size(); j++)
 			{	
 				if (geometry[j]->isReady())
 				{

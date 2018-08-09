@@ -73,9 +73,6 @@
     <ClCompile Include="Chunk.cpp">
       <Filter>Source Files\chunk</Filter>
     </ClCompile>
-    <ClCompile Include="ChunkWorld.cpp">
-      <Filter>Source Files\chunk</Filter>
-    </ClCompile>
     <ClCompile Include="CommandBufferUtils.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>

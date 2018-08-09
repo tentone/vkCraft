@@ -9,6 +9,8 @@
 
 #include <vector>
 
+#include "ChunkGeometry.cpp"
+
 /**
  * Chunks store the world data.
  *
@@ -18,7 +20,7 @@ class Chunk
 {
 public:
 	static const int SIZE = 16;
-	static const int WATER_LEVEL = -5;
+	static const int WATER_LEVEL = 0;
 	static const int CLOUD_LEVEL = SIZE * 3;
 
 	static const int EMPTY = 0;
@@ -36,6 +38,16 @@ public:
 	static const int FLOWER_RED = 500;
 	static const int FLOWER_YELLOW = 501;
 	static const int BIRCH = 502;
+		
+	/**
+	 * Pointer to other chunks.
+	 */
+	Chunk *left, *right, *front, *back, *up, *down;
+
+	/**
+	 * Geometry to represent this chunk.
+	 */
+	ChunkGeometry *geometry;
 
 	/**
 	 * Chunk data, constants defined in this class.
@@ -59,8 +71,8 @@ public:
 	}
 
 	/**
-	 * Get world position of a block, inside of this chunk.
-	 */
+	* Get world position of a block, inside of this chunk.
+	*/
 	glm::vec3 getWorldPosition(int x, int y, int z)
 	{
 		return glm::vec3(position.x * SIZE + x, position.y * SIZE + y, position.z * SIZE + z);
@@ -80,7 +92,7 @@ public:
 				int v = x + position.x * SIZE;
 				int w = z + position.z * SIZE;
 
-				int terrain = getHeight(v, w, 782364);
+				int terrain = getHeight(v, w, seed);
 
 				for (int y = 0; y < SIZE; y++)
 				{
@@ -92,7 +104,7 @@ public:
 					//Generate clouds
 					if (h == CLOUD_LEVEL)
 					{
-						int cloud = getHeight(v, w, 87458) * 3; //sin((v + w) / 50.0) * cos(v / 3.0) * CLOUD_LEVEL / 2.0 + cos(w / 20.0 * sin(v / 10.0) * 2.0) * CLOUD_LEVEL;
+						int cloud = getHeight(v, w, seed * 2) * 3; //sin((v + w) / 50.0) * cos(v / 3.0) * CLOUD_LEVEL / 2.0 + cos(w / 20.0 * sin(v / 10.0) * 2.0) * CLOUD_LEVEL;
 
 						if (cloud > CLOUD_LEVEL)
 						{

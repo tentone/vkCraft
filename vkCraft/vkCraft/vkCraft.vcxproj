@@ -15,7 +15,6 @@
     <ClCompile Include="BufferUtils.cpp" />
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ChunkGeometry.cpp" />
-    <ClCompile Include="ChunkWorld.cpp" />
     <ClCompile Include="CommandBufferUtils.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="FileUtils.cpp" />
