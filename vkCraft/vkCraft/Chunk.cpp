@@ -40,7 +40,11 @@ public:
 	static const int BIRCH = 502;
 		
 	/**
-	 * Pointer to other chunks.
+	 * Pointer to neighboor chunks.
+	 *
+	 * left is -x, right +x
+	 * front is +z, back is -z
+	 * up is +y, down is -y
 	 */
 	Chunk *left, *right, *front, *back, *up, *down;
 
