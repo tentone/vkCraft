@@ -212,7 +212,7 @@ public:
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
 		
 		//World
-		world->updateGeometries(camera.position);
+		world->updateGeometries(camera.position, 4);
 
 		std::vector<Geometry*> geometry = world->geometries;
 		for (int i = 0; i < geometry.size(); i++)
