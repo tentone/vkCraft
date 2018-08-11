@@ -36,10 +36,7 @@
 #include "Object3D.cpp"
 #include "FirstPersonCamera.cpp"
 
-#include "PlaneGeometry.cpp"
-#include "BoxGeometry.cpp"
-
-#include "ChunkNode.cpp"
+#include "ChunkWorld.cpp"
 
 class VkCraft
 {
@@ -49,8 +46,6 @@ public:
 
 	//Validation layer control
 	const bool enableValidationLayers = true;
-
-	std::vector<Geometry*> geometry;
 
 	//Vulkan context and window
 	GLFWwindow *window;
@@ -108,8 +103,11 @@ public:
 	//Object3D and camera
 	Object3D model;
 	FirstPersonCamera camera;
+	UniformBufferObject uniformBuf;
 	double time, delta;
 	bool stateR = false;
+
+	ChunkWorld *world;
 
 	//Use lugarG validation layers provided by the SDK
 	const std::vector<const char*> validationLayers =
@@ -128,20 +126,7 @@ public:
 		std::cout << "VkCraft: Generating chunks" << std::endl;
 		clock_t begin = clock();
 
-		for (int x = -25; x < 25; x++)
-		{
-			for (int z = -25; z < 25; z++)
-			{
-				for (int y = -1; y < 4; y++)
-				{
-					ChunkNode *chunk = new ChunkNode(glm::ivec3(x, y, z));
-					chunk->generateChunk(123);
-					chunk->generateGeometry();
-
-					geometry.push_back(chunk->geometry);
-				}
-			}
-		}
+		world = new ChunkWorld(123);
 
 		clock_t end = clock();
 		double time = double(end - begin) / CLOCKS_PER_SEC;
@@ -211,22 +196,31 @@ public:
 		delta = actual - time;
 		time = actual;
 
+		//Check R key
 		if (stateR == false && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
 			std::cout << "vkCraft: Recreate rendering command buffers." << std::endl;
 			createRenderingCommandBuffers();
 		}
-
 		stateR = glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS;
-
+	
+		//Model matrix
 		model.updateMatrix();
 
-		//Update first person camera
+		//First person camera
 		camera.update(window, delta);
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
+		
+		//World
+		world->updateGeometries(camera.position);
 
-		//Craete UBO
-		UniformBufferObject uniformBuf;
+		std::vector<Geometry*> geometry = world->geometries;
+		for (int i = 0; i < geometry.size(); i++)
+		{
+			createGeometryBuffers(geometry[i]);
+		}
+
+		//Update
 		uniformBuf.model = model.matrix;
 		uniformBuf.view = camera.matrix;
 		uniformBuf.projection = camera.projection;
@@ -353,12 +347,6 @@ public:
 		createTextureImage("texture/minecraft.png");
 		texture.createSampler(&device.logical, &textureSampler);
 
-		//Geometry buffers
-		for (int i = 0; i < geometry.size(); i++)
-		{
-			createGeometryBuffers(geometry[i]);
-		}
-
 		//Create uniform buffer
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer, uniformBufferMemory);
@@ -449,10 +437,8 @@ public:
 		vkDestroyBuffer(device.logical, uniformBuffer, nullptr);
 		vkFreeMemory(device.logical, uniformBufferMemory, nullptr);
 
-		for (int i = 0; i < geometry.size(); i++)
-		{
-			geometry[i]->dispose(device.logical);
-		}
+		//World geometries
+		world->dispose(&device.logical);
 
 		//Semaphores
 		for (size_t i = 0; i < CONCURRENT_FRAMES; i++)
@@ -1002,6 +988,12 @@ public:
 	//Create vertex buffer
 	void createGeometryBuffers(Geometry *geometry)
 	{
+		if (geometry->hasBuffers())
+		{
+			//std::cout << "vkCraft: Geometry was already initialized" << std::endl;
+			return;
+		}
+
 		if (geometry->vertices.size() == 0 || geometry->indices.size() == 0)
 		{
 			//std::cout << "vkCraft: Empty geometry vertex" << std::endl;
@@ -1009,27 +1001,24 @@ public:
 		}
 
 		VkDeviceSize vertexBufferSize = sizeof(Vertex) * geometry->vertices.size();
-		VkBuffer vertexStagingBuffer;
-		VkDeviceMemory vertexStagingBufferMemory;
-
-
 		VkDeviceSize indexBufferSize = sizeof(uint32_t) * geometry->indices.size();
-		VkBuffer indexStagingBuffer;
-		VkDeviceMemory indexStagingBufferMemory;
+
+		VkBuffer indexStagingBuffer, vertexStagingBuffer;
+		VkDeviceMemory indexStagingBufferMemory, vertexStagingBufferMemory;
 
 		//Create CPU buffers
 		BufferUtils::createBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingBufferMemory);
 		BufferUtils::createBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingBufferMemory);
 
 		//Map memory
-		void* vertexData;
+		void *vertexData, *indexData;
 		vkMapMemory(device.logical, vertexStagingBufferMemory, 0, vertexBufferSize, 0, &vertexData);
-		memcpy(vertexData, geometry->vertices.data(), (size_t)vertexBufferSize);
-		vkUnmapMemory(device.logical, vertexStagingBufferMemory);
-
-		void* indexData;
 		vkMapMemory(device.logical, indexStagingBufferMemory, 0, indexBufferSize, 0, &indexData);
+
+		memcpy(vertexData, geometry->vertices.data(), (size_t)vertexBufferSize);
 		memcpy(indexData, geometry->indices.data(), (size_t)indexBufferSize);
+
+		vkUnmapMemory(device.logical, vertexStagingBufferMemory);
 		vkUnmapMemory(device.logical, indexStagingBufferMemory);
 		
 		//Create GPU buffers
@@ -1430,26 +1419,19 @@ public:
 
 			VkDeviceSize offsets[] = { 0 };
 
-			//Sky geometry
-			//TODO <ADD CODE HERE>
+			std::vector<Geometry*> geometries = world->geometries;
 
 			//Chunk geometry
-			for (int j = 0; j < geometry.size(); j++)
+			for (int j = 0; j < geometries.size(); j++)
 			{
-				if (geometry[j]->isReady())
+				if (geometries[j]->hasBuffers())
 				{
-					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(geometry[j]->vertexBuffer), offsets);
-					vkCmdBindIndexBuffer(commandBuffers[i], geometry[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(geometries[j]->vertexBuffer), offsets);
+					vkCmdBindIndexBuffer(commandBuffers[i], geometries[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 					vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry[j]->indices.size()), 1, 0, 0, 0);
+					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometries[j]->indices.size()), 1, 0, 0, 0);
 				}
 			}
-
-			//Water geometry
-			//TODO <ADD CODE HERE>
-
-			//Cloud geometry
-			//TODO <ADD CODE HERE>
 
 			//End rendering
 			vkCmdEndRenderPass(commandBuffers[i]);

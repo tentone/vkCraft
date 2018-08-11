@@ -45,7 +45,7 @@ public:
 	/**
 	 * Chunk position, in steps of one.
 	 */
-	glm::ivec3 position;
+	glm::ivec3 index;
 
 	/**
 	 * Chunk constructor receives a position and creates chunk data based on it.
@@ -54,7 +54,7 @@ public:
 	 */
 	Chunk(glm::ivec3 _position)
 	{
-		position = _position;
+		index = _position;
 	}
 
 	/**
@@ -62,7 +62,7 @@ public:
 	*/
 	glm::vec3 getWorldPosition(int x, int y, int z)
 	{
-		return glm::vec3(position.x * SIZE + x, position.y * SIZE + y, position.z * SIZE + z);
+		return glm::vec3(index.x * SIZE + x, index.y * SIZE + y, index.z * SIZE + z);
 	}
 
 	/**
@@ -74,14 +74,14 @@ public:
 		{
 			for (int z = 0; z < SIZE; z++)
 			{
-				int v = x + position.x * SIZE;
-				int w = z + position.z * SIZE;
+				int v = x + index.x * SIZE;
+				int w = z + index.z * SIZE;
 
 				int terrain = getHeight(v, w, seed);
 
 				for (int y = 0; y < SIZE; y++)
 				{
-					int h = y + position.y * SIZE;
+					int h = y + index.y * SIZE;
 
 					//Generate terrain
 					data[x][y][z] = getBlock(h, terrain);

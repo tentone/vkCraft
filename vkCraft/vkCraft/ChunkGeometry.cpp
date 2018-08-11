@@ -74,7 +74,7 @@ public:
 		vertices = {};
 		indices = {};
 		
-		glm::ivec3 start = chunk->position;
+		glm::ivec3 start = chunk->index;
 		start *= Chunk::SIZE;
 		
 		glm::vec3 scale = glm::vec3(0.5, 0.5, 0.5);
