@@ -11,11 +11,8 @@
 #include <array>
 
 #include "Geometry.cpp"
-#include "BoxGeometry.cpp"
-#include "PlaneGeometry.cpp"
 #include "Vertex.cpp"
 #include "Chunk.cpp"
-#include "Texture.cpp"
 
 /**
  * Geometry to represent a chunk in the world.
@@ -48,23 +45,25 @@ public:
 	};
 
 	/**
+	* Chunk with the data to generate the geometry.
+	*/
+	Chunk *chunk;
+
+	/**
+	 * Constructor receives a pointer to the chunk it is attached to.
+	 */
+	ChunkGeometry(Chunk *_chunk)
+	{
+		chunk = _chunk;
+	}
+
+	/**
 	 * Calculate the UV for the element x, y in a grid with size.
 	 */
 	static glm::vec4 calculateUV(int x, int y, int size)
 	{
 		float step = 1.0 / size;
 		return glm::vec4(step * x, step * y, step * x + step, step * y + step);
-	}
-
-	/**
-	 * Chunk with the data to generate the geometry.
-	 */
-	Chunk *chunk;
-
-	ChunkGeometry(Chunk *_chunk)
-	{
-		chunk = _chunk;
-		generate();
 	}
 
 	/**

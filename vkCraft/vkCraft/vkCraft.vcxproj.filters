@@ -11,9 +11,6 @@
     <Filter Include="Source Files\objects">
       <UniqueIdentifier>{2ce81be3-fb41-412b-800e-d228d9e18960}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\texture">
-      <UniqueIdentifier>{6ebe4f5b-ace3-477c-ad6c-5b6582d9f0eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\utils">
       <UniqueIdentifier>{95ce4320-55c0-46e0-a484-029a9fefd6d2}</UniqueIdentifier>
     </Filter>
@@ -22,6 +19,12 @@
     </Filter>
     <Filter Include="Source Files\chunk">
       <UniqueIdentifier>{69354b52-4646-411b-9cde-d45f5f59b8dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\renderer\buffers">
+      <UniqueIdentifier>{8e31bfa5-4f02-407e-917d-4ae0e7630615}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\texture">
+      <UniqueIdentifier>{6ebe4f5b-ace3-477c-ad6c-5b6582d9f0eb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,9 +55,6 @@
     <ClCompile Include="FileUtils.cpp">
       <Filter>Source Files\utils</Filter>
     </ClCompile>
-    <ClCompile Include="UniformBufferObject.cpp">
-      <Filter>Source Files\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="QueueFamilyIndices.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
@@ -64,26 +64,35 @@
     <ClCompile Include="FirstPersonCamera.cpp">
       <Filter>Source Files\objects</Filter>
     </ClCompile>
-    <ClCompile Include="BufferUtils.cpp">
-      <Filter>Source Files\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Device.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
     <ClCompile Include="Chunk.cpp">
       <Filter>Source Files\chunk</Filter>
     </ClCompile>
-    <ClCompile Include="CommandBufferUtils.cpp">
-      <Filter>Source Files\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="ValidationUtils.cpp">
-      <Filter>Source Files\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="ChunkGeometry.cpp">
       <Filter>Source Files\chunk</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files\objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="BufferUtils.cpp">
+      <Filter>Source Files\renderer\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandBufferUtils.cpp">
+      <Filter>Source Files\renderer\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="UniformBufferObject.cpp">
+      <Filter>Source Files\renderer\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkWorld.cpp">
+      <Filter>Source Files\chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="ChunkNode.cpp">
+      <Filter>Source Files\chunk</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

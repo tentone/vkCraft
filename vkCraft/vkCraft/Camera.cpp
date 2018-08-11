@@ -12,10 +12,10 @@ class Camera : public Object3D
 {
 public:
 	glm::mat4 projection;
-	float aspect;
-	float near, far, fov;
+	double aspect;
+	double near, far, fov;
 
-	Camera(float _fov = 60.0f, float _near = 0.1f, float _far = 1000.0f)
+	Camera(double _fov = 60.0, double _near = 0.1, double _far = 1000.0)
 	{
 		fov = _fov;
 		near = _near;

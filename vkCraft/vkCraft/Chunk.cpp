@@ -9,8 +9,6 @@
 
 #include <vector>
 
-#include "ChunkGeometry.cpp"
-
 /**
  * Chunks store the world data.
  *
@@ -38,20 +36,6 @@ public:
 	static const int FLOWER_RED = 500;
 	static const int FLOWER_YELLOW = 501;
 	static const int BIRCH = 502;
-		
-	/**
-	 * Pointer to neighboor chunks.
-	 *
-	 * left is -x, right +x
-	 * front is +z, back is -z
-	 * up is +y, down is -y
-	 */
-	Chunk *left, *right, *front, *back, *up, *down;
-
-	/**
-	 * Geometry to represent this chunk.
-	 */
-	ChunkGeometry *geometry;
 
 	/**
 	 * Chunk data, constants defined in this class.
@@ -71,7 +55,6 @@ public:
 	Chunk(glm::ivec3 _position)
 	{
 		position = _position;
-		generate();
 	}
 
 	/**
@@ -85,10 +68,8 @@ public:
 	/**
 	 * Generate chunk data based on its position.
 	 */
-	void generate()
+	void generate(int seed)
 	{
-		int seed = 782364;
-
 		for (int x = 0; x < SIZE; x++)
 		{
 			for (int z = 0; z < SIZE; z++)
@@ -108,7 +89,7 @@ public:
 					//Generate clouds
 					if (h == CLOUD_LEVEL)
 					{
-						int cloud = getHeight(v, w, seed * 2) * 3; //sin((v + w) / 50.0) * cos(v / 3.0) * CLOUD_LEVEL / 2.0 + cos(w / 20.0 * sin(v / 10.0) * 2.0) * CLOUD_LEVEL;
+						int cloud = getHeight(v, w, seed * 2) * 3;
 
 						if (cloud > CLOUD_LEVEL)
 						{
@@ -153,17 +134,6 @@ public:
 
 		return (int)(((noise + 1) / 2.0) * (maxHeight - minHeight));
 	}
-
-	double findNoise(double x, double z, int seed)
-	{
-		int n = (int)x + (int)z * 57;
-		n += seed;
-		n = (n << 13) ^ n;
-
-		unsigned int nn = (n * (n * n * 60493 + 19990303) + 1376312589);
-		
-		return 1.0 - ((double)nn / 1073741824.0);
-	}
 	
 	/**
 	 * Interpolate values.
@@ -202,6 +172,17 @@ public:
 		return interpolate(int1, int2, z - floory);
 	}
 
+	double findNoise(double x, double z, int seed)
+	{
+		int n = (int)x + (int)z * 57;
+		n += seed;
+		n = (n << 13) ^ n;
+
+		unsigned int nn = (n * (n * n * 60493 + 19990303) + 1376312589);
+
+		return 1.0 - ((double)nn / 1073741824.0);
+	}
+
 	/** 
 	 * Here we get what kind of block it is.
 	 * z is which block we are currently in column.
@@ -209,17 +190,37 @@ public:
 	 */
 	int getBlock(int z, int height)
 	{
+		//Above water level
 		if (z > WATER_LEVEL)
 		{
-			if (z > height) { return EMPTY; }
-			if (z == height) { return GRASS; }
-			if (z > height - 7) { return DIRT; }
+			if (z > height)
+			{
+				return EMPTY;
+			}
+			if (z == height)
+			{
+				return GRASS;
+			}
+			if (z > height - 7)
+			{
+				return DIRT;
+			}
 		}
+		//Under water
 		else
 		{
-			if ((z > height + 5)) { return WATER; }
-			if ((z > height - 5)) { return SAND; }
-			if ((z > height - 10)) { return DIRT; }
+			if (z > height + 5)
+			{
+				return WATER;
+			}
+			if (z > height - 5)
+			{
+				return SAND;
+			}
+			if (z > height - 10)
+			{
+				return DIRT;
+			}
 		}
 
 		return STONE;

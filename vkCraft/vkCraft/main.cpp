@@ -39,89 +39,16 @@
 #include "PlaneGeometry.cpp"
 #include "BoxGeometry.cpp"
 
-#include "Chunk.cpp"
-#include "ChunkGeometry.cpp"
+#include "ChunkNode.cpp"
 
-const int MAX_FRAMES_IN_FLIGHT = 1;
-
-const std::vector<const char*> validationLayers =
-{
-	"VK_LAYER_LUNARG_standard_validation"
-};
-
-const std::vector<const char*> deviceExtensions =
-{
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
-
-//Declare the debug report extension
-VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
-{
-	auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
-
-	if (func != nullptr)
-	{
-		return func(instance, pCreateInfo, pAllocator, pCallback);
-	}
-	else
-	{
-		return VK_ERROR_EXTENSION_NOT_PRESENT;
-	}
-}
-
-//Destroy the debug report extension
-void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator)
-{
-	auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
-
-	if (func != nullptr)
-	{
-		func(instance, callback, pAllocator);
-	}
-}
-
-//Main class
 class VkCraft
 {
 public:
-	VkCraft()
-	{
-		std::cout << "Generating chunks" << std::endl;
-		clock_t begin = clock();
+	//Maximum amount of frames that can be renderer simultaneously
+	const int CONCURRENT_FRAMES = 1;
 
-		for (int x = -25; x < 25; x++)
-		{
-			for (int z = -25; z < 25; z++)
-			{
-				for (int y = -1; y < 4; y++)
-				{
-					Chunk chunk = Chunk(glm::ivec3(x, y, z));
-					Geometry *geo = new ChunkGeometry(&chunk);
-					geo->generate();
-					geometry.push_back(geo);
-				}
-			}
-
-		}
-
-		clock_t end = clock();
-		double time = double(end - begin) / CLOCKS_PER_SEC;
-		std::cout << "Took " << time << " seconds" << std::endl;
-	}
-
-	void run()
-	{
-		initWindow();
-		initVulkan();
-		mainLoop();
-		cleanup();
-	}
+	//Validation layer control
+	const bool enableValidationLayers = true;
 
 	std::vector<Geometry*> geometry;
 
@@ -182,6 +109,78 @@ public:
 	Object3D model;
 	FirstPersonCamera camera;
 	double time, delta;
+	bool stateR = false;
+
+	//Use lugarG validation layers provided by the SDK
+	const std::vector<const char*> validationLayers =
+	{
+		"VK_LAYER_LUNARG_standard_validation"
+	};
+
+	const std::vector<const char*> deviceExtensions =
+	{
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
+	//Application contructor
+	VkCraft()
+	{
+		std::cout << "VkCraft: Generating chunks" << std::endl;
+		clock_t begin = clock();
+
+		for (int x = -25; x < 25; x++)
+		{
+			for (int z = -25; z < 25; z++)
+			{
+				for (int y = -1; y < 4; y++)
+				{
+					ChunkNode *chunk = new ChunkNode(glm::ivec3(x, y, z));
+					chunk->generateChunk(123);
+					chunk->generateGeometry();
+
+					geometry.push_back(chunk->geometry);
+				}
+			}
+		}
+
+		clock_t end = clock();
+		double time = double(end - begin) / CLOCKS_PER_SEC;
+		std::cout << "VkCraft: Took " << time << " seconds" << std::endl;
+	}
+
+	//Declare the debug report extension
+	VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
+	{
+		auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+
+		if (func != nullptr)
+		{
+			return func(instance, pCreateInfo, pAllocator, pCallback);
+		}
+		else
+		{
+			return VK_ERROR_EXTENSION_NOT_PRESENT;
+		}
+	}
+
+	//Destroy the debug report extension
+	void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator)
+	{
+		auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+
+		if (func != nullptr)
+		{
+			func(instance, callback, pAllocator);
+		}
+	}
+
+	void run()
+	{
+		initWindow();
+		initVulkan();
+		mainLoop();
+		cleanup();
+	}
 
 	//Initialize GLFW window
 	void initWindow()
@@ -205,23 +204,12 @@ public:
 		vkDeviceWaitIdle(device.logical);
 	}
 
-	bool stateR = false;
-
 	//Update the uniform buffers (and run some logic)
 	void update()
 	{
 		double actual = glfwGetTime();
 		delta = actual - time;
 		time = actual;
-
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-		{
-			model.rotation.y -= 0.0001f;
-		}
-		if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-		{
-			model.rotation.y += 0.0001f;
-		}
 
 		if (stateR == false && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
@@ -232,17 +220,17 @@ public:
 		stateR = glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS;
 
 		model.updateMatrix();
-			
+
 		//Update first person camera
 		camera.update(window, delta);
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
-		
+
 		//Craete UBO
 		UniformBufferObject uniformBuf;
 		uniformBuf.model = model.matrix;
 		uniformBuf.view = camera.matrix;
 		uniformBuf.projection = camera.projection;
-		
+
 		//Copy UBO data
 		void* data;
 		vkMapMemory(device.logical, uniformBufferMemory, 0, sizeof(uniformBuf), 0, &data);
@@ -319,7 +307,7 @@ public:
 			throw std::runtime_error("vkCraft: Failed to present swap chain image!");
 		}
 
-		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+		currentFrame = (currentFrame + 1) % CONCURRENT_FRAMES;
 	}
 
 
@@ -368,10 +356,9 @@ public:
 		//Geometry buffers
 		for (int i = 0; i < geometry.size(); i++)
 		{
-			createVertexBuffer(geometry[i]);
-			createIndexBuffer(geometry[i]);
+			createGeometryBuffers(geometry[i]);
 		}
-		
+
 		//Create uniform buffer
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer, uniformBufferMemory);
@@ -386,10 +373,10 @@ public:
 		//Semaphores
 		createSyncObjects();
 	}
-	
+
 	/**
-	 * Recreate the hole swap chain.
-	 */
+	* Recreate the hole swap chain.
+	*/
 	void recreateSwapChain()
 	{
 		int width, height;
@@ -468,7 +455,7 @@ public:
 		}
 
 		//Semaphores
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (size_t i = 0; i < CONCURRENT_FRAMES; i++)
 		{
 			vkDestroySemaphore(device.logical, renderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(device.logical, imageAvailableSemaphores[i], nullptr);
@@ -476,7 +463,7 @@ public:
 		}
 
 		vkDestroyCommandPool(device.logical, commandPool, nullptr);
-		
+
 		device.dispose();
 
 		if (enableValidationLayers)
@@ -1013,61 +1000,51 @@ public:
 	}
 
 	//Create vertex buffer
-	void createVertexBuffer(Geometry *geometry)
+	void createGeometryBuffers(Geometry *geometry)
 	{
-		if (geometry->vertices.size() == 0)
+		if (geometry->vertices.size() == 0 || geometry->indices.size() == 0)
 		{
 			//std::cout << "vkCraft: Empty geometry vertex" << std::endl;
 			return;
 		}
 
-		VkDeviceSize bufferSize = sizeof(Vertex) * geometry->vertices.size();
+		VkDeviceSize vertexBufferSize = sizeof(Vertex) * geometry->vertices.size();
+		VkBuffer vertexStagingBuffer;
+		VkDeviceMemory vertexStagingBufferMemory;
 
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-		void* data;
-		vkMapMemory(device.logical, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, geometry->vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(device.logical, stagingBufferMemory);
+		VkDeviceSize indexBufferSize = sizeof(uint32_t) * geometry->indices.size();
+		VkBuffer indexStagingBuffer;
+		VkDeviceMemory indexStagingBufferMemory;
 
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->vertexBuffer, geometry->vertexBufferMemory);
+		//Create CPU buffers
+		BufferUtils::createBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingBufferMemory);
+		BufferUtils::createBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingBufferMemory);
 
-		//Copy from CPU memory buffer to GPU memory buffer
-		copyBuffer(stagingBuffer, geometry->vertexBuffer, bufferSize);
+		//Map memory
+		void* vertexData;
+		vkMapMemory(device.logical, vertexStagingBufferMemory, 0, vertexBufferSize, 0, &vertexData);
+		memcpy(vertexData, geometry->vertices.data(), (size_t)vertexBufferSize);
+		vkUnmapMemory(device.logical, vertexStagingBufferMemory);
+
+		void* indexData;
+		vkMapMemory(device.logical, indexStagingBufferMemory, 0, indexBufferSize, 0, &indexData);
+		memcpy(indexData, geometry->indices.data(), (size_t)indexBufferSize);
+		vkUnmapMemory(device.logical, indexStagingBufferMemory);
+		
+		//Create GPU buffers
+		BufferUtils::createBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->vertexBuffer, geometry->vertexBufferMemory);
+		BufferUtils::createBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->indexBuffer, geometry->indexBufferMemory);
+
+		//Copy from CPU buffer to GPU buffer
+		copyBuffer(vertexStagingBuffer, geometry->vertexBuffer, vertexBufferSize);
+		copyBuffer(indexStagingBuffer, geometry->indexBuffer, indexBufferSize);
 
 		//Clean the stagging (CPU) buffer
-		vkDestroyBuffer(device.logical, stagingBuffer, nullptr);
-		vkFreeMemory(device.logical, stagingBufferMemory, nullptr);
-	}
-
-	//Create index buffer
-	void createIndexBuffer(Geometry *geometry)
-	{
-		if (geometry->indices.size() == 0)
-		{
-			//std::cout << "vkCraft: Empty geometry index list" << std::endl;
-			return;
-		}
-
-		VkDeviceSize bufferSize = sizeof(uint32_t) * geometry->indices.size();
-
-		VkBuffer stagingBuffer;
-		VkDeviceMemory stagingBufferMemory;
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-		void* data;
-		vkMapMemory(device.logical, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, geometry->indices.data(), (size_t)bufferSize);
-		vkUnmapMemory(device.logical, stagingBufferMemory);
-
-		BufferUtils::createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->indexBuffer, geometry->indexBufferMemory);
-
-		copyBuffer(stagingBuffer, geometry->indexBuffer, bufferSize);
-
-		vkDestroyBuffer(device.logical, stagingBuffer, nullptr);
-		vkFreeMemory(device.logical, stagingBufferMemory, nullptr);
+		vkDestroyBuffer(device.logical, vertexStagingBuffer, nullptr);
+		vkFreeMemory(device.logical, vertexStagingBufferMemory, nullptr);
+		vkDestroyBuffer(device.logical, indexStagingBuffer, nullptr);
+		vkFreeMemory(device.logical, indexStagingBufferMemory, nullptr);
 	}
 
 	void createDescriptorPool()
@@ -1450,7 +1427,7 @@ public:
 			//Start rendering
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-			
+
 			VkDeviceSize offsets[] = { 0 };
 
 			//Sky geometry
@@ -1458,7 +1435,7 @@ public:
 
 			//Chunk geometry
 			for (int j = 0; j < geometry.size(); j++)
-			{	
+			{
 				if (geometry[j]->isReady())
 				{
 					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(geometry[j]->vertexBuffer), offsets);
@@ -1467,7 +1444,7 @@ public:
 					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometry[j]->indices.size()), 1, 0, 0, 0);
 				}
 			}
-			
+
 			//Water geometry
 			//TODO <ADD CODE HERE>
 
@@ -1487,9 +1464,9 @@ public:
 	//Create syncronization semaphores and fences
 	void createSyncObjects()
 	{
-		imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-		inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+		imageAvailableSemaphores.resize(CONCURRENT_FRAMES);
+		renderFinishedSemaphores.resize(CONCURRENT_FRAMES);
+		inFlightFences.resize(CONCURRENT_FRAMES);
 
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -1498,7 +1475,7 @@ public:
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < CONCURRENT_FRAMES; i++)
 		{
 			if (vkCreateSemaphore(device.logical, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
 				vkCreateSemaphore(device.logical, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
@@ -1581,7 +1558,7 @@ public:
 		//Device device.physical features
 		VkPhysicalDeviceFeatures supportedFeatures;
 		vkGetPhysicalDeviceFeatures(physical, &supportedFeatures);
-		
+
 		Device test;
 		test.physical = physical;
 
@@ -1663,7 +1640,7 @@ public:
 			int width, height;
 			glfwGetWindowSize(window, &width, &height);
 
-			VkExtent2D actualExtent = { width, height };
+			VkExtent2D actualExtent = { (uint32_t)width, (uint32_t)height };
 			actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
 			actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
@@ -1688,7 +1665,7 @@ public:
 		}
 
 		//Check presentation modes
-		uint32_t presentModeCount; 
+		uint32_t presentModeCount;
 		vkGetPhysicalDeviceSurfacePresentModesKHR(physical, surface, &presentModeCount, nullptr);
 		if (presentModeCount != 0)
 		{

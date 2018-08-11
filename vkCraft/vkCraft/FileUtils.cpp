@@ -4,10 +4,15 @@
 #include <vector>
 #include <fstream>
 
+/**
+ * Utils to read and write data to files.
+ */
 class FileUtils
 {
 public:
-	//Read file to char vector
+	/**
+	 * Read file to a char vector.
+	 */
 	static std::vector<char> readFile(const std::string& filename)
 	{
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);

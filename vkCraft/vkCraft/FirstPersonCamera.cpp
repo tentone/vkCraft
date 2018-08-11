@@ -42,11 +42,11 @@ public:
 	 */
 	void update(GLFWwindow *window, double time)
 	{
-		float moveSpeed = 10.0f * time;
-		float lookSpeed = 1.0f * time;
+		double moveSpeed = 10.0 * time;
+		double lookSpeed = 1.0 * time;
 
-		float pi = 3.14159265359f;
-		float pid2 = pi / 2.0f;
+		double pi = 3.14159265359;
+		double pid2 = pi / 2.0;
 		
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{

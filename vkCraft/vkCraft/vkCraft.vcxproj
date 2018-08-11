@@ -15,6 +15,8 @@
     <ClCompile Include="BufferUtils.cpp" />
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ChunkGeometry.cpp" />
+    <ClCompile Include="ChunkNode.cpp" />
+    <ClCompile Include="ChunkWorld.cpp" />
     <ClCompile Include="CommandBufferUtils.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="FileUtils.cpp" />
@@ -25,11 +27,11 @@
     <ClCompile Include="PlaneGeometry.cpp" />
     <ClCompile Include="QueueFamilyIndices.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SwapChainSupportDetails.cpp" />
     <ClCompile Include="Object3D.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UniformBufferObject.cpp" />
-    <ClCompile Include="ValidationUtils.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

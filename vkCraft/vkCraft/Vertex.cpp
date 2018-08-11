@@ -9,6 +9,11 @@
 
 #include <array>
 
+/**
+ * Vertex is used to represent vertex for geometries.
+ *
+ * A vertex is composed of a point, normal vector and texture uv.
+ */
 class Vertex
 {
 public:
