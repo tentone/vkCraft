@@ -126,7 +126,7 @@ public:
 		std::cout << "VkCraft: Generating chunks" << std::endl;
 		clock_t begin = clock();
 
-		world = new ChunkWorld(123);
+		world = new ChunkWorld(349995);
 
 		clock_t end = clock();
 		double time = double(end - begin) / CLOCKS_PER_SEC;
@@ -212,9 +212,7 @@ public:
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
 		
 		//World
-		world->updateGeometries(camera.position, 4);
-
-		std::vector<Geometry*> geometry = world->geometries;
+		std::vector<Geometry*> geometry = world->getGeometries(camera.position, 4);
 		for (int i = 0; i < geometry.size(); i++)
 		{
 			createGeometryBuffers(geometry[i]);

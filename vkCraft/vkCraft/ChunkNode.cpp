@@ -3,6 +3,8 @@
 #include "Chunk.cpp"
 #include "ChunkGeometry.cpp"
 
+#include <algorithm>
+
 class ChunkNode
 {
 public:
@@ -33,7 +35,7 @@ public:
 
 	/*
 	 * left is - x, right + x
-	 * front is + z, back is - z
+	 * front is - z, back is + z
 	 * up is + y, down is - y
 	 */
 	static const int LEFT = 0;
@@ -44,7 +46,7 @@ public:
 	static const int DOWN = 5;
 
 	/**
-	 * Geometry to represent this chunk.
+	 * Chunk data.
 	 */
 	Chunk *chunk;
 
@@ -57,6 +59,11 @@ public:
 	 * Node state.
 	 */
 	int state;
+	
+	/**
+	 * World seed.
+	 */
+	int seed;
 
 	/**
 	 * Node index relataive to the root.
@@ -73,28 +80,104 @@ public:
 	/**
 	 * Pointer to neighboor chunks.
 	 */
-	ChunkNode *neighbors[6];
+	ChunkNode *neighbors[6] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
 	/**
 	 * Node constructor.
 	 */
-	ChunkNode(glm::ivec3 _index)
+	ChunkNode(glm::ivec3 _index, int _seed)
 	{
 		index = _index;
 		state = UNINITIALIZED;
 		chunk = new Chunk(_index);
 		geometry = new ChunkGeometry(chunk);
+		generateData();
+	}
 
-		for (unsigned int i = 0; i < 6; i++)
+	/**
+	 * Get geometries from this node and its neighboors recursively.
+	 */
+	void getGeometries(std::vector<Geometry*> *geometries, int recursive = 0)
+	{
+		//Check state of node
+		if(state < GEOMETRY)
 		{
-			neighbors[i] = nullptr;
+			generateGeometry();
+		}
+
+		//Check if geometries contains geometry, it it does not add new
+		if (std::find(geometries->begin(), geometries->end(), geometry) == geometries->end())
+		{
+			geometries->push_back(geometry);
+		}
+		else
+		{
+			return;
+		}
+
+		if (recursive > 0)
+		{
+			for (unsigned int i = 0; i < 6; i++)
+			{
+				neighbors[i]->getGeometries(geometries, recursive - 1);
+			}
+		}
+	}
+
+	/**
+	 * Generate neighbors for a node.
+	 */
+	void generateNeighbors(int recursive = 0)
+	{
+		//X
+		if (neighbors[ChunkNode::LEFT] == nullptr)
+		{
+			neighbors[ChunkNode::LEFT] = new ChunkNode(glm::ivec3(index.x - 1, index.y, index.z), seed);
+			neighbors[ChunkNode::LEFT]->neighbors[ChunkNode::RIGHT] = this;
+		}
+		if (neighbors[ChunkNode::RIGHT] == nullptr)
+		{
+			neighbors[ChunkNode::RIGHT] = new ChunkNode(glm::ivec3(index.x + 1, index.y, index.z), seed);
+			neighbors[ChunkNode::RIGHT]->neighbors[ChunkNode::LEFT] = this;
+		}
+
+		//Y
+		if (neighbors[ChunkNode::UP] == nullptr)
+		{
+			neighbors[ChunkNode::UP] = new ChunkNode(glm::ivec3(index.x, index.y + 1, index.z), seed);
+			neighbors[ChunkNode::UP]->neighbors[ChunkNode::DOWN] = this;
+		}
+		if (neighbors[ChunkNode::DOWN] == nullptr)
+		{
+			neighbors[ChunkNode::DOWN] = new ChunkNode(glm::ivec3(index.x, index.y - 1, index.z), seed);
+			neighbors[ChunkNode::DOWN]->neighbors[ChunkNode::UP] = this;
+		}
+
+		//Z
+		if (neighbors[ChunkNode::FRONT] == nullptr)
+		{
+			neighbors[ChunkNode::FRONT] = new ChunkNode(glm::ivec3(index.x, index.y, index.z - 1), seed);
+			neighbors[ChunkNode::FRONT]->neighbors[ChunkNode::BACK] = this;
+		}
+		if (neighbors[ChunkNode::BACK] == nullptr)
+		{
+			neighbors[ChunkNode::BACK] = new ChunkNode(glm::ivec3(index.x, index.y, index.z + 1), seed);
+			neighbors[ChunkNode::BACK]->neighbors[ChunkNode::FRONT] = this;
+		}
+
+		if (recursive > 0)
+		{
+			for (unsigned int i = 0; i < 6; i++)
+			{
+				neighbors[i]->generateNeighbors(recursive - 1);
+			}
 		}
 	}
 
 	/**
 	* Generate data for this node.
 	*/
-	void generateChunk(int seed)
+	void generateData()
 	{
 		state = DATA;
 		chunk->generate(seed);
@@ -105,9 +188,10 @@ public:
 	 */
 	void generateGeometry()
 	{
+		//If it still has no chunk data generate it
 		if (state < DATA)
 		{
-			return;
+			generateData();
 		}
 
 		state = GEOMETRY;
@@ -119,11 +203,13 @@ public:
 	*/
 	void dispose(VkDevice *device)
 	{
+		//Check if the geometry has buffers
 		if (state >= GEOMETRY)
 		{
 			geometry->dispose(device);
 		}
 		
+		//State as disposed
 		state = DISPOSED;
 
 		//Dipose neighboors
