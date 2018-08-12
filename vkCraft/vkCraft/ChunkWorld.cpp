@@ -12,6 +12,8 @@
  */
 class ChunkWorld
 {
+private:
+	ChunkNode *current;
 public:
 
 	/**
@@ -25,16 +27,11 @@ public:
 	int seed;
 
 	/**
-	 * Vector of geometries visible for this world.
-	 *
-	 * The geometries are updated using the updateGeometries() method.
-	 */
+	* Vector of geometries visible for this world.
+	*
+	* The geometries are updated using the updateGeometries() method.
+	*/
 	std::vector<Geometry*> geometries;
-
-	/**
-	 * Current chunk, was the chunk used as center in the last update.
-	 */
-	ChunkNode *current;
 
 	/**
 	 * Chunk world constructor creates the root chunk.
@@ -44,7 +41,6 @@ public:
 		seed = _seed;
 
 		root = new ChunkNode(glm::ivec3(0, 0, 0), seed);
-
 		current = root;
 	}
 
@@ -62,6 +58,9 @@ public:
 
 		//Get node
 		ChunkNode *node = getChunkNode(index);
+
+		std::cout << "vkCraft: Node to get geometries from: " << node->index.x << ", " << node->index.y << ", " << node->index.z << std::endl;
+
 		node->getGeometries(&geometries, distance);
 
 		return geometries;
@@ -74,12 +73,13 @@ public:
 	{
 		glm::ivec3 offset = current->index - index;
 
-		std::cout << "vkCraft: Chunk offset: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
+		std::cout << "vkCraft: Chunk index: " << index.x << ", " << index.y << ", " << index.z << std::endl;
+		//std::cout << "vkCraft: Chunk offset: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
 
 		//X
 		if (offset.x > 0)
 		{
-			for (unsigned int x = 0; x <= offset.x; x++)
+			for (int x = 0; x <= offset.x; x++)
 			{
 				if (current->neighbors[ChunkNode::LEFT] == nullptr)
 				{
@@ -91,7 +91,7 @@ public:
 		}
 		else if (offset.x < 0)
 		{
-			for (unsigned int x = 0; x >= offset.x; x--)
+			for (int x = offset.x; x <= 0; x++)
 			{
 				if (current->neighbors[ChunkNode::RIGHT] == nullptr)
 				{
@@ -101,11 +101,11 @@ public:
 				current = current->neighbors[ChunkNode::RIGHT];
 			}
 		}
-		
+
 		//Y
 		if (offset.y > 0)
 		{
-			for (unsigned int y = 0; y <= offset.y; y++)
+			for (int y = 0; y <= offset.y; y++)
 			{
 				if (current->neighbors[ChunkNode::DOWN] == nullptr)
 				{
@@ -117,7 +117,7 @@ public:
 		}
 		else if (offset.y < 0)
 		{
-			for (unsigned int y = 0; y >= offset.y; y--)
+			for (int y = offset.y; y <= 0; y++)
 			{
 				if (current->neighbors[ChunkNode::UP] == nullptr)
 				{
@@ -131,7 +131,7 @@ public:
 		//Z
 		if (offset.z > 0)
 		{
-			for (unsigned int z = 0; z <= offset.z; z++)
+			for (int z = 0; z <= offset.z; z++)
 			{
 				if (current->neighbors[ChunkNode::FRONT] == nullptr)
 				{
@@ -143,7 +143,7 @@ public:
 		}
 		else if (offset.z < 0)
 		{
-			for (unsigned int z = 0; z >= offset.x; z--)
+			for (int z = offset.y; z <= 0; z++)
 			{
 				if (current->neighbors[ChunkNode::BACK] == nullptr)
 				{
@@ -153,24 +153,27 @@ public:
 				current = current->neighbors[ChunkNode::BACK];
 			}
 		}
+
 		return current;
 	}
 
 	/**
-	 * Get block for a specific position.
+	 * Get block for a specific world position.
+	 *
+	 * Gets the node that stores that position and the block value.
 	 */
 	int getBlock(glm::ivec3 position)
 	{
 		glm::ivec3 index = { position.x / Chunk::SIZE, position.y / Chunk::SIZE , position.z / Chunk::SIZE };
 		ChunkNode *node = getChunkNode(index);
 
-		//TODO <ADD CODE>
-
-		return -1;
+		return node->chunk->data[position.x % Chunk::SIZE][position.y % Chunk::SIZE][position.z % Chunk::SIZE];
 	}
 
 	/**
 	 * Dispose all the geometries attached to the nodes in this world.
+	 *
+	 * Nodes ares disposed recursively.
 	 */
 	void dispose(VkDevice *device)
 	{

@@ -105,7 +105,6 @@ public:
 	FirstPersonCamera camera;
 	UniformBufferObject uniformBuf;
 	double time, delta;
-	bool stateR = false;
 
 	ChunkWorld *world;
 
@@ -123,14 +122,7 @@ public:
 	//Application contructor
 	VkCraft()
 	{
-		std::cout << "VkCraft: Generating chunks" << std::endl;
-		clock_t begin = clock();
-
 		world = new ChunkWorld(349995);
-
-		clock_t end = clock();
-		double time = double(end - begin) / CLOCKS_PER_SEC;
-		std::cout << "VkCraft: Took " << time << " seconds" << std::endl;
 	}
 
 	//Declare the debug report extension
@@ -192,6 +184,11 @@ public:
 	//Update the uniform buffers (and run some logic)
 	void update()
 	{
+		/*
+		std::cout << "VkCraft: Generating chunks" << std::endl;
+		clock_t begin = clock();
+		*/
+
 		double actual = glfwGetTime();
 		delta = actual - time;
 		time = actual;
@@ -203,8 +200,10 @@ public:
 		camera.update(window, delta);
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
 		
+		//TODO <ONLY UPDATE ON CHUNK CHANGE>
+
 		//World
-		std::vector<Geometry*> geometry = world->getGeometries(camera.position, 4);
+		std::vector<Geometry*> geometry = world->getGeometries(camera.position, 5);
 
 		//Create geometries buffers (only created if they dont exist)
 		for (int i = 0; i < geometry.size(); i++)
@@ -212,13 +211,7 @@ public:
 			createGeometryBuffers(geometry[i]);
 		}
 
-		//Check R key and recreate command buffers
-		if (stateR == false && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-		{
-			std::cout << "vkCraft: Recreate rendering command buffers." << std::endl;
-			createRenderingCommandBuffers();
-		}
-		stateR = glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS;
+		createRenderingCommandBuffers();
 
 		//Update
 		uniformBuf.model = model.matrix;
@@ -230,6 +223,12 @@ public:
 		vkMapMemory(device.logical, uniformBufferMemory, 0, sizeof(uniformBuf), 0, &data);
 		memcpy(data, &uniformBuf, sizeof(uniformBuf));
 		vkUnmapMemory(device.logical, uniformBufferMemory);
+
+		/*
+		clock_t end = clock();
+		double time = double(end - begin) / CLOCKS_PER_SEC;
+		std::cout << "VkCraft: Took " << time << " seconds" << std::endl;
+		*/
 	}
 
 	//Draw frame to the swap chain and display it

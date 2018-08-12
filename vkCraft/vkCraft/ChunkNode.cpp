@@ -91,6 +91,7 @@ public:
 		state = UNINITIALIZED;
 		chunk = new Chunk(_index);
 		geometry = new ChunkGeometry(chunk);
+
 		generateData();
 	}
 
@@ -117,6 +118,8 @@ public:
 
 		if (recursive > 0)
 		{
+			generateNeighbors();
+
 			for (unsigned int i = 0; i < 6; i++)
 			{
 				neighbors[i]->getGeometries(geometries, recursive - 1);
