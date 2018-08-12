@@ -196,14 +196,6 @@ public:
 		delta = actual - time;
 		time = actual;
 
-		//Check R key
-		if (stateR == false && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-		{
-			std::cout << "vkCraft: Recreate rendering command buffers." << std::endl;
-			createRenderingCommandBuffers();
-		}
-		stateR = glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS;
-	
 		//Model matrix
 		model.updateMatrix();
 
@@ -213,10 +205,20 @@ public:
 		
 		//World
 		std::vector<Geometry*> geometry = world->getGeometries(camera.position, 4);
+
+		//Create geometries buffers (only created if they dont exist)
 		for (int i = 0; i < geometry.size(); i++)
 		{
 			createGeometryBuffers(geometry[i]);
 		}
+
+		//Check R key and recreate command buffers
+		if (stateR == false && glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			std::cout << "vkCraft: Recreate rendering command buffers." << std::endl;
+			createRenderingCommandBuffers();
+		}
+		stateR = glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS;
 
 		//Update
 		uniformBuf.model = model.matrix;

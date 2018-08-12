@@ -119,8 +119,6 @@ public:
 			orientation.y -= lookSpeed;
 		}
 		
-		//std::cout << "Hor:" << orientation.x << " Ver:" << orientation.y << std::endl;
-
 		//Limit vertical orientation
 		if(orientation.y < -1.57f)
 		{
