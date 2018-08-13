@@ -48,12 +48,12 @@ public:
 	/**
 	 * Chunk data.
 	 */
-	Chunk *chunk;
+	Chunk chunk;
 
 	/**
 	 * Geometry to represent this chunk.
 	 */
-	ChunkGeometry *geometry;
+	ChunkGeometry geometry;
 	
 	/**
 	 * Node state.
@@ -89,9 +89,7 @@ public:
 	{
 		index = _index;
 		state = UNINITIALIZED;
-		chunk = new Chunk(_index);
-		geometry = new ChunkGeometry(chunk);
-
+		chunk.setIndex(_index);
 		generateData();
 	}
 
@@ -107,9 +105,9 @@ public:
 		}
 
 		//Check if geometries contains geometry, it it does not add new
-		if (std::find(geometries->begin(), geometries->end(), geometry) == geometries->end())
+		if (std::find(geometries->begin(), geometries->end(), &geometry) == geometries->end())
 		{
-			geometries->push_back(geometry);
+			geometries->push_back(&geometry);
 		}
 		else
 		{
@@ -183,7 +181,7 @@ public:
 	void generateData()
 	{
 		state = DATA;
-		chunk->generate(seed);
+		chunk.generate(seed);
 	}
 
 	/**
@@ -198,7 +196,7 @@ public:
 		}
 
 		state = GEOMETRY;
-		geometry->generate();
+		geometry.generate(&chunk);
 	}
 
 	/**
@@ -209,9 +207,9 @@ public:
 		//Check if the geometry has buffers
 		if (state >= GEOMETRY)
 		{
-			geometry->dispose(device);
+			geometry.dispose(device);
 		}
-		
+
 		//State as disposed
 		state = DISPOSED;
 
@@ -221,6 +219,7 @@ public:
 			if(neighbors[i] != nullptr && neighbors[i]->state != DISPOSED)
 			{
 				neighbors[i]->dispose(device);
+				delete neighbors[i];
 			}
 		}
 	}

@@ -106,7 +106,7 @@ public:
 	UniformBufferObject uniformBuf;
 	double time, delta;
 
-	ChunkWorld *world;
+	ChunkWorld world = ChunkWorld(349995);
 
 	//Use lugarG validation layers provided by the SDK
 	const std::vector<const char*> validationLayers =
@@ -118,12 +118,6 @@ public:
 	{
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
-
-	//Application contructor
-	VkCraft()
-	{
-		world = new ChunkWorld(349995);
-	}
 
 	//Declare the debug report extension
 	VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
@@ -203,7 +197,7 @@ public:
 		//TODO <ONLY UPDATE ON CHUNK CHANGE>
 
 		//World
-		std::vector<Geometry*> geometry = world->getGeometries(camera.position, 5);
+		std::vector<Geometry*> geometry = world.getGeometries(camera.position, 5);
 
 		//Create geometries buffers (only created if they dont exist)
 		for (int i = 0; i < geometry.size(); i++)
@@ -211,7 +205,7 @@ public:
 			createGeometryBuffers(geometry[i]);
 		}
 
-		createRenderingCommandBuffers();
+		//recreateRenderingCommandBuffers();
 
 		//Update
 		uniformBuf.model = model.matrix;
@@ -386,13 +380,21 @@ public:
 		createRenderingCommandBuffers();
 	}
 
+	/**
+	 * Recreate the command buffers to update the geometry to be drawn.
+	 */
+	void recreateRenderingCommandBuffers()
+	{
+		createRenderingCommandBuffers();
+	}
+
 	//Cleanup swapchain elements
 	void cleanupSwapChain()
 	{
 		//Depth buffer data
 		depth.dispose(&device.logical);
 
-		for (auto framebuffer : swapChainFramebuffers)
+		for (VkFramebuffer framebuffer : swapChainFramebuffers)
 		{
 			vkDestroyFramebuffer(device.logical, framebuffer, nullptr);
 		}
@@ -404,7 +406,7 @@ public:
 		//Render pass
 		vkDestroyRenderPass(device.logical, renderPass, nullptr);
 
-		for (auto imageView : swapChainImageViews)
+		for (VkImageView imageView : swapChainImageViews)
 		{
 			vkDestroyImageView(device.logical, imageView, nullptr);
 		}
@@ -437,10 +439,10 @@ public:
 		vkFreeMemory(device.logical, uniformBufferMemory, nullptr);
 
 		//World geometries
-		world->dispose(&device.logical);
+		world.dispose(&device.logical);
 
 		//Semaphores
-		for (size_t i = 0; i < CONCURRENT_FRAMES; i++)
+		for (int i = 0; i < CONCURRENT_FRAMES; i++)
 		{
 			vkDestroySemaphore(device.logical, renderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(device.logical, imageAvailableSemaphores[i], nullptr);
@@ -489,7 +491,7 @@ public:
 
 		//Check extensions available
 		std::cout << "GLFW Extensions:" << std::endl;
-		for (uint32_t i = 0; i < extensions.size(); i++)
+		for (int i = 0; i < extensions.size(); i++)
 		{
 			std::cout << extensions[i] << std::endl;
 		}
@@ -693,7 +695,7 @@ public:
 	{
 		swapChainImageViews.resize(swapChainImages.size());
 
-		for (uint32_t i = 0; i < swapChainImages.size(); i++)
+		for (int i = 0; i < swapChainImages.size(); i++)
 		{
 			swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
@@ -835,8 +837,8 @@ public:
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = (float)swapChainExtent.width;
-		viewport.height = (float)swapChainExtent.height;
+		viewport.width = (float) swapChainExtent.width;
+		viewport.height = (float) swapChainExtent.height;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 
@@ -950,7 +952,7 @@ public:
 	{
 		swapChainFramebuffers.resize(swapChainImageViews.size());
 
-		for (size_t i = 0; i < swapChainImageViews.size(); i++)
+		for (int i = 0; i < swapChainImageViews.size(); i++)
 		{
 			std::array<VkImageView, 2> attachments = { swapChainImageViews[i], depth.imageView };
 
@@ -1375,6 +1377,7 @@ public:
 	void createRenderingCommandBuffers()
 	{
 		commandBuffers.resize(swapChainFramebuffers.size());
+		std::cout << commandBuffers.size() << std::endl;
 
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1387,7 +1390,7 @@ public:
 			throw std::runtime_error("vkCraft: Failed to allocate command buffers");
 		}
 
-		for (size_t i = 0; i < commandBuffers.size(); i++)
+		for (int i = 0; i < commandBuffers.size(); i++)
 		{
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1418,17 +1421,15 @@ public:
 
 			VkDeviceSize offsets[] = { 0 };
 
-			std::vector<Geometry*> geometries = world->geometries;
-
 			//Chunk geometry
-			for (int j = 0; j < geometries.size(); j++)
+			for (int j = 0; j < world.geometries.size(); j++)
 			{
-				if (geometries[j]->hasBuffers())
+				if (world.geometries[j]->hasBuffers())
 				{
-					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(geometries[j]->vertexBuffer), offsets);
-					vkCmdBindIndexBuffer(commandBuffers[i], geometries[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(world.geometries[j]->vertexBuffer), offsets);
+					vkCmdBindIndexBuffer(commandBuffers[i], world.geometries[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 					vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(geometries[j]->indices.size()), 1, 0, 0, 0);
+					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(world.geometries[j]->indices.size()), 1, 0, 0, 0);
 				}
 			}
 

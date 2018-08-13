@@ -27,8 +27,8 @@ public:
 	 */
 	virtual void generate()
 	{
-		vertices = {};
-		indices = {};
+		vertices.clear();
+		indices.clear();
 	}
 
 	/**

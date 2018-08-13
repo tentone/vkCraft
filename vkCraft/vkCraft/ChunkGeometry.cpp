@@ -45,19 +45,6 @@ public:
 	};
 
 	/**
-	* Chunk with the data to generate the geometry.
-	*/
-	Chunk *chunk;
-
-	/**
-	 * Constructor receives a pointer to the chunk it is attached to.
-	 */
-	ChunkGeometry(Chunk *_chunk)
-	{
-		chunk = _chunk;
-	}
-
-	/**
 	 * Calculate the UV for the element x, y in a grid with size.
 	 */
 	static glm::vec4 calculateUV(int x, int y, int size)
@@ -69,10 +56,10 @@ public:
 	/**
 	 * Generate new geometry data for the attached chunk.
 	 */
-	void generate()
+	void generate(Chunk *chunk)
 	{	
-		vertices = {};
-		indices = {};
+		vertices.clear();
+		indices.clear();
 		
 		glm::ivec3 start = chunk->index;
 		start *= Chunk::SIZE;

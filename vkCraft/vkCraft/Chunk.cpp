@@ -52,9 +52,9 @@ public:
 	 *
 	 * The chunk position is organized in x,y,z, each step represents a move of CHUNK_SIZE in the world.
 	 */
-	Chunk(glm::ivec3 _position)
+	void setIndex(glm::ivec3 _index)
 	{
-		index = _position;
+		index = _index;
 	}
 
 	/**

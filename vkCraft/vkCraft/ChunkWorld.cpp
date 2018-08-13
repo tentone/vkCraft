@@ -74,7 +74,7 @@ public:
 		glm::ivec3 offset = current->index - index;
 
 		std::cout << "vkCraft: Chunk index: " << index.x << ", " << index.y << ", " << index.z << std::endl;
-		//std::cout << "vkCraft: Chunk offset: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
+		std::cout << "vkCraft: Chunk offset: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
 
 		//X
 		if (offset.x > 0)
@@ -167,7 +167,7 @@ public:
 		glm::ivec3 index = { position.x / Chunk::SIZE, position.y / Chunk::SIZE , position.z / Chunk::SIZE };
 		ChunkNode *node = getChunkNode(index);
 
-		return node->chunk->data[position.x % Chunk::SIZE][position.y % Chunk::SIZE][position.z % Chunk::SIZE];
+		return node->chunk.data[position.x % Chunk::SIZE][position.y % Chunk::SIZE][position.z % Chunk::SIZE];
 	}
 
 	/**
@@ -178,5 +178,6 @@ public:
 	void dispose(VkDevice *device)
 	{
 		root->dispose(device);
+		delete root;
 	}
 };
