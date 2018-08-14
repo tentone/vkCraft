@@ -991,13 +991,6 @@ public:
 	{
 		if (geometry->hasBuffers())
 		{
-			//std::cout << "vkCraft: Geometry was already initialized" << std::endl;
-			return;
-		}
-
-		if (geometry->vertices.size() == 0 || geometry->indices.size() == 0)
-		{
-			//std::cout << "vkCraft: Empty geometry vertex" << std::endl;
 			return;
 		}
 
@@ -1718,6 +1711,8 @@ public:
 int main()
 {
 	VkCraft app;
+
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	try
 	{

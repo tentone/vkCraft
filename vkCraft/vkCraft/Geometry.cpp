@@ -25,11 +25,7 @@ public:
 	/**
 	 * Method to generate the geometry index and vertex data.
 	 */
-	virtual void generate()
-	{
-		vertices.clear();
-		indices.clear();
-	}
+	virtual void generate(){}
 
 	/**
 	 * Check if geometry is ready to be drawn by the renderer.
@@ -42,11 +38,11 @@ public:
 	/**
 	 * Apply a matrix transformation to the geometry vertex position.
 	 */
-	void applyTransformationMatrix(glm::mat4 matrix)
+	void applyTransformationMatrix(glm::mat4 *matrix)
 	{
 		for (int i = 0; i < vertices.size(); i++)
 		{
-			glm::vec4 result = matrix * glm::vec4(vertices[i].pos, 1.0f);
+			glm::vec4 result = *matrix * glm::vec4(vertices[i].pos, 1.0f);
 			
 			vertices[i].pos.x = result.x;
 			vertices[i].pos.y = result.y;
