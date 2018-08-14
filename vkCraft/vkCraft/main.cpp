@@ -113,7 +113,7 @@ public:
 	UniformBufferObject uniformBuf;
 	double time, delta;
 
-	ChunkWorld world = ChunkWorld(349995);
+	//ChunkWorld world = ChunkWorld(349995);
 
 	//Use lugarG validation layers provided by the SDK
 	const std::vector<const char*> validationLayers =
@@ -156,7 +156,7 @@ public:
 	{
 		initWindow();
 		initVulkan();
-		mainLoop();
+		//mainLoop();
 		cleanup();
 	}
 
@@ -446,7 +446,7 @@ public:
 		vkFreeMemory(device.logical, uniformBufferMemory, nullptr);
 
 		//World geometries
-		world.dispose(&device.logical);
+		//world.dispose(&device.logical);
 
 		//Semaphores
 		for (int i = 0; i < CONCURRENT_FRAMES; i++)
@@ -1423,6 +1423,7 @@ public:
 			VkDeviceSize offsets[] = { 0 };
 
 			//Chunk geometry
+			/*
 			for (int j = 0; j < world.geometries.size(); j++)
 			{
 				if (world.geometries[j]->hasBuffers())
@@ -1433,7 +1434,7 @@ public:
 					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(world.geometries[j]->indices.size()), 1, 0, 0, 0);
 				}
 			}
-
+			*/
 			//End rendering
 			vkCmdEndRenderPass(commandBuffers[i]);
 
