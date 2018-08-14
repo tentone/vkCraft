@@ -1,5 +1,12 @@
 #pragma once
 
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new DEBUG_NEW
+#endif
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -197,13 +204,13 @@ public:
 		//TODO <ONLY UPDATE ON CHUNK CHANGE>
 
 		//World
-		std::vector<Geometry*> geometry = world.getGeometries(camera.position, 5);
+		//std::vector<Geometry*> geometry = world.getGeometries(camera.position, 5);
 
 		//Create geometries buffers (only created if they dont exist)
-		for (int i = 0; i < geometry.size(); i++)
-		{
-			createGeometryBuffers(geometry[i]);
-		}
+		//for (int i = 0; i < geometry.size(); i++)
+		//{
+			//createGeometryBuffers(geometry[i]);
+		//}
 
 		//recreateRenderingCommandBuffers();
 
@@ -461,6 +468,7 @@ public:
 		vkDestroySurfaceKHR(instance, surface, nullptr);
 		vkDestroyInstance(instance, nullptr);
 
+		//GLFW destroy
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
@@ -989,7 +997,7 @@ public:
 	//Create vertex buffer
 	void createGeometryBuffers(Geometry *geometry)
 	{
-		if (geometry->hasBuffers())
+		if (geometry->hasBuffers() || geometry->indices.size() == 0 || geometry->vertices.size() == 0)
 		{
 			return;
 		}
@@ -1370,7 +1378,7 @@ public:
 	void createRenderingCommandBuffers()
 	{
 		commandBuffers.resize(swapChainFramebuffers.size());
-		std::cout << commandBuffers.size() << std::endl;
+		//std::cout << "VkCraft: Rendering buffers count: " << commandBuffers.size() << std::endl;
 
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1712,17 +1720,21 @@ int main()
 {
 	VkCraft app;
 
-	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
+	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	
 	try
 	{
 		app.run();
+
 	}
 	catch (const std::runtime_error &error)
 	{
 		std::cerr << "vkCraft: " << error.what() << std::endl;
 		return EXIT_FAILURE;
 	}
+	
+	_CrtDumpMemoryLeaks();
 
 	return EXIT_SUCCESS;
 }

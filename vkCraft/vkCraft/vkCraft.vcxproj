@@ -23,11 +23,9 @@
     <ClCompile Include="FirstPersonCamera.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="PlaneGeometry.cpp" />
     <ClCompile Include="QueueFamilyIndices.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SwapChainSupportDetails.cpp" />
     <ClCompile Include="Object3D.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -93,14 +91,14 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level1</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\stb-master;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glm;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\VulkanSDK\1.1.77.0\Include;C:\VulkanSDK\1.1.73.0\Include;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN64\include;C:\Users\tentone\Documents\Visual Studio 2017\Libraries\stb-master;C:\Users\joseferrao\Documents\Visual Studio 2017\Libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

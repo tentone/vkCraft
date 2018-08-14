@@ -73,12 +73,6 @@
     <ClCompile Include="ChunkGeometry.cpp">
       <Filter>Source Files\chunk</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files\objects</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Source Files\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="BufferUtils.cpp">
       <Filter>Source Files\renderer\buffers</Filter>
     </ClCompile>
