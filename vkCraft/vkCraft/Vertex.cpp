@@ -21,6 +21,9 @@ public:
 	glm::vec3 normal;
 	glm::vec2 uv;
 
+	/**
+	 * Get binding description for the vertex.
+	 */
 	static VkVertexInputBindingDescription getBindingDescription()
 	{
 		VkVertexInputBindingDescription bindingDescription = {};
@@ -32,6 +35,9 @@ public:
 		return bindingDescription;
 	}
 
+	/**
+	 * Get attrubute description to pass information to the shader using correct location.
+	 */
 	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions()
 	{
 		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};

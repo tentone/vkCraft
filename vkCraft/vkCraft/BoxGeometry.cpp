@@ -82,9 +82,9 @@ public:
 
 		for (int i = 0; i < vertices.size(); i++)
 		{
-			vertices[i].pos.x *= width;
-			vertices[i].pos.y *= depth;
-			vertices[i].pos.z *= depth;
+			vertices[i].pos.x *= width / 2.0;
+			vertices[i].pos.y *= height / 2.0;
+			vertices[i].pos.z *= depth / 2.0;
 		}
 	}
 };

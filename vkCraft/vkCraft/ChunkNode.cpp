@@ -80,26 +80,15 @@ public:
 		generateData();
 	}
 
-	~ChunkNode()
-	{
-		for(unsigned int i = 0; i < 6; i++)
-		{
-			delete neighbors[i];
-		}
-	}
-
 	/**
 	 * Get geometries from this node and its neighboors recursively.
 	 */
 	void getGeometries(std::vector<Geometry*> *geometries, int recursive = 0)
 	{
-		bool generatedGeometry = false;
-
 		//Generate geometry if necessary
 		if(state < GEOMETRY)
 		{
 			generateGeometry();
-			generatedGeometry = true;
 		}
 
 		//Check if geometries contains geometry, it it does not add new
@@ -203,7 +192,7 @@ public:
 	void dispose(VkDevice &device)
 	{
 		//Check if the geometry has buffers
-		if (state >= GEOMETRY)
+		if (state > DATA)
 		{
 			geometry.dispose(device);
 			state = DATA;

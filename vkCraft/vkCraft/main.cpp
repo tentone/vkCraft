@@ -40,6 +40,7 @@
 #include "UniformBufferObject.cpp"
 #include "Texture.cpp"
 #include "FileUtils.cpp"
+#include "CommandBufferUtils.cpp"
 
 #include "Object3D.cpp"
 #include "FirstPersonCamera.cpp"
@@ -193,20 +194,20 @@ public:
 		{
 			//double t = glfwGetTime();
 
+			glm::vec3 position = camera.position;
+			position.x += 100;
+
 			//World
-			//OK
-			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 5);
+			std::vector<Geometry*> geometries = world.getGeometries(position, 5);
 
 			//If necessary create geometry buffers
 			for (int i = 0; i < geometries.size(); i++)
 			{
-				//BIG MEMORY LEAK
-				//createGeometryBuffers(geometries[i]);
+				createGeometryBuffers(geometries[i]);
 			}
 
 			//Update render commands
-			//SMALL MEMORY LEAK
-			//recreateRenderingCommandBuffers();
+			recreateRenderingCommandBuffers();
 
 			//std::cout << "VkCraft: Recreate render buffers time: " << (glfwGetTime() - t) << std::endl;
 		}
@@ -379,6 +380,7 @@ public:
 		cleanupSwapChain();
 
 		//Recreate new swap chain
+		createCommandPool(&renderCommandPool);
 		createSwapChain();
 		createImageViews();
 		createRenderPass();
@@ -393,6 +395,10 @@ public:
 	 */
 	void recreateRenderingCommandBuffers()
 	{
+		vkDeviceWaitIdle(device.logical);
+
+		vkDestroyCommandPool(device.logical, renderCommandPool, nullptr);
+		createCommandPool(&renderCommandPool);
 		createRenderingCommandBuffers();
 	}
 
