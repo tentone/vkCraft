@@ -194,11 +194,8 @@ public:
 		{
 			//double t = glfwGetTime();
 
-			glm::vec3 position = camera.position;
-			position.x += 100;
-
 			//World
-			std::vector<Geometry*> geometries = world.getGeometries(position, 5);
+			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 4);
 
 			//If necessary create geometry buffers
 			for (int i = 0; i < geometries.size(); i++)

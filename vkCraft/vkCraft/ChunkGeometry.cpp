@@ -54,11 +54,6 @@ public:
 	}
 
 	/**
-	* If true the geometry needs to be updated.
-	*/
-	bool needsUpdate = false;
-
-	/**
 	 * Generate new geometry data for the attached chunk.
 	 */
 	void generate(Chunk *chunk)
@@ -91,9 +86,9 @@ public:
 						float pz = 0.5f + iz;
 						
 						//Negative
-						float nx = -0.5f + ix;
-						float ny = -0.5f + iy;
-						float nz = -0.5f + iz;
+						float nx = ix - 0.5f;
+						float ny = iy - 0.5f;
+						float nz = iz - 0.5f;
 
 						//Top face
 						if (y == Chunk::SIZE - 1 || chunk->data[x][y + 1][z] == Chunk::EMPTY)
@@ -111,6 +106,11 @@ public:
 							vertices.push_back({ { px, py, nz },{ 0, 1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
 							size += 4;
 						}
+
+						/*if (x == Chunk::SIZE - 1 || x == 0 || y == Chunk::SIZE - 1 || y == 0 || z == Chunk::SIZE - 1 || z == 0)
+						{
+							continue;
+						}*/
 
 						//Bottom face
 						if (y == 0 || chunk->data[x][y - 1][z] == Chunk::EMPTY)
