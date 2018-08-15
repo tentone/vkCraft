@@ -71,12 +71,12 @@ public:
 	/**
 	 * Dispose the geometry.
 	 */
-	void dispose(VkDevice *device)
+	void dispose(VkDevice &device)
 	{
-		vkDestroyBuffer(*device, vertexBuffer, nullptr);
-		vkFreeMemory(*device, vertexBufferMemory, nullptr);
+		vkDestroyBuffer(device, vertexBuffer, nullptr);
+		vkFreeMemory(device, vertexBufferMemory, nullptr);
 
-		vkDestroyBuffer(*device, indexBuffer, nullptr);
-		vkFreeMemory(*device, indexBufferMemory, nullptr);
+		vkDestroyBuffer(device, indexBuffer, nullptr);
+		vkFreeMemory(device, indexBufferMemory, nullptr);
 	}
 };

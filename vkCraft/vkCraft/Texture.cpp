@@ -25,7 +25,7 @@ public:
 	/**
 	 * Create a texture sampler, used for texture access in shaders.
 	 */
-	void createSampler(VkDevice *device, VkSampler *textureSampler)
+	void createSampler(VkDevice &device, VkSampler &textureSampler)
 	{
 		VkSamplerCreateInfo samplerInfo = {};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -42,7 +42,7 @@ public:
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-		if (vkCreateSampler(*device, &samplerInfo, nullptr, textureSampler) != VK_SUCCESS)
+		if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS)
 		{
 			throw std::runtime_error("vkCraft: Failed to create texture sampler!");
 		}

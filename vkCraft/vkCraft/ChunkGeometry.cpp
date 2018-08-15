@@ -54,6 +54,11 @@ public:
 	}
 
 	/**
+	* If true the geometry needs to be updated.
+	*/
+	bool needsUpdate = false;
+
+	/**
 	 * Generate new geometry data for the attached chunk.
 	 */
 	void generate(Chunk *chunk)
@@ -61,10 +66,9 @@ public:
 		vertices.clear();
 		indices.clear();
 		
+		int size = 0;
 		glm::ivec3 start = chunk->index;
 		start *= Chunk::SIZE;
-		
-		glm::vec3 scale = glm::vec3(0.5, 0.5, 0.5);
 
 		for (int x = 0; x < Chunk::SIZE; x++)
 		{
@@ -94,8 +98,6 @@ public:
 						//Top face
 						if (y == Chunk::SIZE - 1 || chunk->data[x][y + 1][z] == Chunk::EMPTY)
 						{
-							int size = vertices.size();
-
 							indices.push_back(size + 1);
 							indices.push_back(size);
 							indices.push_back(size + 2);
@@ -107,13 +109,12 @@ public:
 							vertices.push_back({ { nx, py, nz },{ 0, 1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
 							vertices.push_back({ { px, py, pz },{ 0, 1, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
 							vertices.push_back({ { px, py, nz },{ 0, 1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
+							size += 4;
 						}
 
 						//Bottom face
 						if (y == 0 || chunk->data[x][y - 1][z] == Chunk::EMPTY)
 						{
-							int size = vertices.size();
-
 							indices.push_back(size + 3);
 							indices.push_back(size + 1);
 							indices.push_back(size);
@@ -125,13 +126,12 @@ public:
 							vertices.push_back({ { px, ny, nz },{ 0, -1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
 							vertices.push_back({ { nx, ny, pz },{ 0, -1, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
 							vertices.push_back({ { nx, ny, nz },{ 0, -1, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
+							size += 4;
 						}
 
 						//Front face
 						if (z == Chunk::SIZE - 1 || chunk->data[x][y][z + 1] == Chunk::EMPTY)
 						{
-							int size = vertices.size();
-
 							indices.push_back(size);
 							indices.push_back(size + 2);
 							indices.push_back(size + 3);
@@ -143,13 +143,12 @@ public:
 							vertices.push_back({ { nx, py, pz },{ 0, 0, 1 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
 							vertices.push_back({ { px, ny, pz },{ 0, 0, 1 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
 							vertices.push_back({ { px, py, pz },{ 0, 0, 1 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
+							size += 4;
 						}
 
 						//Back face
 						if (z == 0 || chunk->data[x][y][z - 1] == Chunk::EMPTY)
 						{
-							int size = vertices.size();
-
 							indices.push_back(size + 2);
 							indices.push_back(size + 3);
 							indices.push_back(size + 1);
@@ -161,13 +160,12 @@ public:
 							vertices.push_back({ { px, py, nz },{ 0, 0, -1 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
 							vertices.push_back({ { nx, ny, nz },{ 0, 0, -1 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
 							vertices.push_back({ { nx, py, nz },{ 0, 0, -1 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
+							size += 4;
 						}
 
 						//Right face
 						if (x == Chunk::SIZE - 1 || chunk->data[x + 1][y][z] == Chunk::EMPTY)
 						{
-							int size = vertices.size();
-
 							indices.push_back(size + 2);
 							indices.push_back(size + 3);
 							indices.push_back(size + 1);
@@ -179,13 +177,12 @@ public:
 							vertices.push_back({ { px, py, pz },{ 1, 0, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
 							vertices.push_back({ { px, ny, nz },{ 1, 0, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
 							vertices.push_back({ { px, py, nz },{ 1, 0, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
+							size += 4;
 						}
 
 						//Left face
 						if (x == 0 || chunk->data[x - 1][y][z] == Chunk::EMPTY)
 						{
-							int size = vertices.size();
-
 							indices.push_back(size);
 							indices.push_back(size + 2);
 							indices.push_back(size + 3);
@@ -197,6 +194,7 @@ public:
 							vertices.push_back({ { nx, py, nz },{ -1, 0, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].y } });
 							vertices.push_back({ { nx, ny, pz },{ -1, 0, 0 },{ BLOCK_UVS[value].x, BLOCK_UVS[value].w } });
 							vertices.push_back({ { nx, py, pz },{ -1, 0, 0 },{ BLOCK_UVS[value].z, BLOCK_UVS[value].w } });
+							size += 4;
 						}
 					}
 				}

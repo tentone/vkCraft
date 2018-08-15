@@ -1,6 +1,7 @@
 #pragma once
 
 #define _CRTDBG_MAP_ALLOC
+
 #include <crtdbg.h>
 #ifdef _DEBUG
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
@@ -83,14 +84,15 @@ public:
 	VkPipeline graphicsPipeline;
 
 	VkCommandPool commandPool;
-	std::vector<VkCommandBuffer> commandBuffers;
+	
+	//Render pipeline
+	VkCommandPool renderCommandPool;
+	std::vector<VkCommandBuffer> renderCommandBuffers;
 
-	//OBJECT DATA START
 	//Uniform buffer
 	VkBuffer uniformBuffer;
 	VkDeviceMemory uniformBufferMemory;
 
-	//MERGE INTO SINGLE CLASS
 	Texture texture;
 	VkSampler textureSampler = VK_NULL_HANDLE;
 
@@ -113,7 +115,7 @@ public:
 	UniformBufferObject uniformBuf;
 	double time, delta;
 
-	//ChunkWorld world = ChunkWorld(349995);
+	ChunkWorld world = ChunkWorld(349995);
 
 	//Use lugarG validation layers provided by the SDK
 	const std::vector<const char*> validationLayers =
@@ -154,23 +156,13 @@ public:
 
 	void run()
 	{
-		initWindow();
-		initVulkan();
-		//mainLoop();
+		initialize();
+		loop();
 		cleanup();
 	}
 
-	//Initialize GLFW window
-	void initWindow()
-	{
-		glfwInit();
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-		window = glfwCreateWindow(1024, 600, "VkCraft", nullptr, nullptr);
-	}
-
 	//Logic loop
-	void mainLoop()
+	void loop()
 	{
 		while (!glfwWindowShouldClose(window))
 		{
@@ -185,11 +177,6 @@ public:
 	//Update the uniform buffers (and run some logic)
 	void update()
 	{
-		/*
-		std::cout << "VkCraft: Generating chunks" << std::endl;
-		clock_t begin = clock();
-		*/
-
 		double actual = glfwGetTime();
 		delta = actual - time;
 		time = actual;
@@ -200,21 +187,35 @@ public:
 		//First person camera
 		camera.update(window, delta);
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
-		
-		//TODO <ONLY UPDATE ON CHUNK CHANGE>
-
-		//World
-		//std::vector<Geometry*> geometry = world.getGeometries(camera.position, 5);
 
 		//Create geometries buffers (only created if they dont exist)
-		//for (int i = 0; i < geometry.size(); i++)
-		//{
-			//createGeometryBuffers(geometry[i]);
-		//}
+		if (true || glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			double t = glfwGetTime();
 
-		//recreateRenderingCommandBuffers();
+			//World
+			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 5);
 
-		//Update
+			//If necessary create geometry buffers
+			for (int i = 0; i < geometries.size(); i++)
+			{
+				createGeometryBuffers(geometries[i]);
+			}
+
+			//std::cout << "VkCraft: Update world time: " << (glfwGetTime() - t) << std::endl;
+		}
+
+		if (true || glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+		{
+			double t = glfwGetTime();
+
+			//Update render commands
+			recreateRenderingCommandBuffers();
+
+			//std::cout << "VkCraft: Recreate render buffers time: " << (glfwGetTime() - t) << std::endl;
+		}
+
+		//Update UBO
 		uniformBuf.model = model.matrix;
 		uniformBuf.view = camera.matrix;
 		uniformBuf.projection = camera.projection;
@@ -224,12 +225,6 @@ public:
 		vkMapMemory(device.logical, uniformBufferMemory, 0, sizeof(uniformBuf), 0, &data);
 		memcpy(data, &uniformBuf, sizeof(uniformBuf));
 		vkUnmapMemory(device.logical, uniformBufferMemory);
-
-		/*
-		clock_t end = clock();
-		double time = double(end - begin) / CLOCKS_PER_SEC;
-		std::cout << "VkCraft: Took " << time << " seconds" << std::endl;
-		*/
 	}
 
 	//Draw frame to the swap chain and display it
@@ -267,7 +262,7 @@ public:
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+		submitInfo.pCommandBuffers = &renderCommandBuffers[imageIndex];
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -306,8 +301,14 @@ public:
 
 
 	//Initialize vulkan
-	void initVulkan()
+	void initialize()
 	{
+		//Create window
+		glfwInit();
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+		window = glfwCreateWindow(1024, 600, "VkCraft", nullptr, nullptr);
+
 		//Create instance
 		createInstance();
 
@@ -335,7 +336,8 @@ public:
 		createGraphicsPipeline();
 
 		//Command pool
-		createCommandPool();
+		createCommandPool(&commandPool);
+		createCommandPool(&renderCommandPool);
 
 		//Depth buffer
 		createDepthResources();
@@ -345,7 +347,7 @@ public:
 
 		//Texture data
 		createTextureImage("texture/minecraft.png");
-		texture.createSampler(&device.logical, &textureSampler);
+		texture.createSampler(device.logical, textureSampler);
 
 		//Create uniform buffer
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -377,7 +379,10 @@ public:
 
 		vkDeviceWaitIdle(device.logical);
 
+		//Clean up swap chain
 		cleanupSwapChain();
+
+		//Recreate new swap chain
 		createSwapChain();
 		createImageViews();
 		createRenderPass();
@@ -398,6 +403,9 @@ public:
 	//Cleanup swapchain elements
 	void cleanupSwapChain()
 	{
+		//Render command pool
+		vkDestroyCommandPool(device.logical, renderCommandPool, nullptr);
+
 		//Depth buffer data
 		depth.dispose(&device.logical);
 
@@ -413,6 +421,7 @@ public:
 		//Render pass
 		vkDestroyRenderPass(device.logical, renderPass, nullptr);
 
+		//Image view
 		for (VkImageView imageView : swapChainImageViews)
 		{
 			vkDestroyImageView(device.logical, imageView, nullptr);
@@ -446,7 +455,7 @@ public:
 		vkFreeMemory(device.logical, uniformBufferMemory, nullptr);
 
 		//World geometries
-		//world.dispose(&device.logical);
+		world.dispose(device.logical);
 
 		//Semaphores
 		for (int i = 0; i < CONCURRENT_FRAMES; i++)
@@ -456,6 +465,7 @@ public:
 			vkDestroyFence(device.logical, inFlightFences[i], nullptr);
 		}
 
+		//Command pool
 		vkDestroyCommandPool(device.logical, commandPool, nullptr);
 
 		device.dispose();
@@ -890,17 +900,6 @@ public:
 		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
-		//Alpha blending configuration
-		/*
-		colorBlendAttachment.blendEnable = VK_TRUE;
-		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-		*/
-
 		VkPipelineColorBlendStateCreateInfo colorBlending = {};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;
@@ -980,7 +979,7 @@ public:
 		}
 	}
 
-	void createCommandPool()
+	void createCommandPool(VkCommandPool *commandPool)
 	{
 		QueueFamilyIndices queueFamilyIndices = device.getQueueFamilyIndices(surface);
 
@@ -988,7 +987,7 @@ public:
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
 
-		if (vkCreateCommandPool(device.logical, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
+		if (vkCreateCommandPool(device.logical, &poolInfo, nullptr, commandPool) != VK_SUCCESS)
 		{
 			throw std::runtime_error("vkCraft: Failed to create command pool");
 		}
@@ -1022,7 +1021,7 @@ public:
 
 		vkUnmapMemory(device.logical, vertexStagingBufferMemory);
 		vkUnmapMemory(device.logical, indexStagingBufferMemory);
-		
+
 		//Create GPU buffers
 		BufferUtils::createBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->vertexBuffer, geometry->vertexBufferMemory);
 		BufferUtils::createBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->indexBuffer, geometry->indexBufferMemory);
@@ -1377,27 +1376,27 @@ public:
 	//Create the actual draw command buffer
 	void createRenderingCommandBuffers()
 	{
-		commandBuffers.resize(swapChainFramebuffers.size());
-		//std::cout << "VkCraft: Rendering buffers count: " << commandBuffers.size() << std::endl;
+		//Create a command buffer for each frame buffer
+		renderCommandBuffers.resize(swapChainFramebuffers.size());
 
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = commandPool;
+		allocInfo.commandPool = renderCommandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+		allocInfo.commandBufferCount = (uint32_t)renderCommandBuffers.size();
 
-		if (vkAllocateCommandBuffers(device.logical, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
+		if (vkAllocateCommandBuffers(device.logical, &allocInfo, renderCommandBuffers.data()) != VK_SUCCESS)
 		{
 			throw std::runtime_error("vkCraft: Failed to allocate command buffers");
 		}
 
-		for (int i = 0; i < commandBuffers.size(); i++)
+		for (int i = 0; i < renderCommandBuffers.size(); i++)
 		{
 			VkCommandBufferBeginInfo beginInfo = {};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-			if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
+			if (vkBeginCommandBuffer(renderCommandBuffers[i], &beginInfo) != VK_SUCCESS)
 			{
 				throw std::runtime_error("vkCraft: Failed to begin recording command buffer");
 			}
@@ -1417,28 +1416,27 @@ public:
 			renderPassInfo.pClearValues = clearValues.data();
 
 			//Start rendering
-			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+			vkCmdBeginRenderPass(renderCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBindPipeline(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
 			VkDeviceSize offsets[] = { 0 };
 
 			//Chunk geometry
-			/*
 			for (int j = 0; j < world.geometries.size(); j++)
 			{
 				if (world.geometries[j]->hasBuffers())
 				{
-					vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &(world.geometries[j]->vertexBuffer), offsets);
-					vkCmdBindIndexBuffer(commandBuffers[i], world.geometries[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-					vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(world.geometries[j]->indices.size()), 1, 0, 0, 0);
+					vkCmdBindVertexBuffers(renderCommandBuffers[i], 0, 1, &(world.geometries[j]->vertexBuffer), offsets);
+					vkCmdBindIndexBuffer(renderCommandBuffers[i], world.geometries[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+					vkCmdBindDescriptorSets(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+					vkCmdDrawIndexed(renderCommandBuffers[i], static_cast<uint32_t>(world.geometries[j]->indices.size()), 1, 0, 0, 0);
 				}
 			}
-			*/
+			
 			//End rendering
-			vkCmdEndRenderPass(commandBuffers[i]);
+			vkCmdEndRenderPass(renderCommandBuffers[i]);
 
-			if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
+			if (vkEndCommandBuffer(renderCommandBuffers[i]) != VK_SUCCESS)
 			{
 				throw std::runtime_error("vkCraft: Failed to record command buffer");
 			}
@@ -1719,10 +1717,10 @@ public:
 
 int main()
 {
-	VkCraft app;
+	//_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	VkCraft app;
 	
 	try
 	{
@@ -1735,7 +1733,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 	
-	_CrtDumpMemoryLeaks();
+	//_CrtDumpMemoryLeaks();
 
 	return EXIT_SUCCESS;
 }

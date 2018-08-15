@@ -9,11 +9,6 @@ class ChunkNode
 {
 public:
 	/**
-	 * Disposed node.
-	 */
-	static const int DISPOSED = -1;
-
-	/**
 	 * Uninitiaalized state, the node has no chunk data and geometry.
 	 */
 	static const int UNINITIALIZED = 0;
@@ -27,11 +22,6 @@ public:
 	 * The node and chunk and geometry data.
 	 */
 	static const int GEOMETRY = 2;
-
-	/**
-	* The geometry buffers are created
-	*/
-	static const int READY = 3;
 
 	/*
 	 * left is - x, right + x
@@ -82,9 +72,6 @@ public:
 	 */
 	ChunkNode *neighbors[6] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
-	/**
-	 * Node constructor.
-	 */
 	ChunkNode(glm::ivec3 _index, int _seed)
 	{
 		index = _index;
@@ -93,15 +80,26 @@ public:
 		generateData();
 	}
 
+	~ChunkNode()
+	{
+		for(unsigned int i = 0; i < 6; i++)
+		{
+			delete neighbors[i];
+		}
+	}
+
 	/**
 	 * Get geometries from this node and its neighboors recursively.
 	 */
 	void getGeometries(std::vector<Geometry*> *geometries, int recursive = 0)
 	{
-		//Check state of node
+		bool generatedGeometry = false;
+
+		//Generate geometry if necessary
 		if(state < GEOMETRY)
 		{
 			generateGeometry();
+			generatedGeometry = true;
 		}
 
 		//Check if geometries contains geometry, it it does not add new
@@ -200,23 +198,21 @@ public:
 	}
 
 	/**
-	* Dispose all the geometries attached to the nodes in this world.
-	*/
-	void dispose(VkDevice *device)
+	 * Dispose all the geometries attached to this node recursively.
+	 */
+	void dispose(VkDevice &device)
 	{
 		//Check if the geometry has buffers
 		if (state >= GEOMETRY)
 		{
 			geometry.dispose(device);
+			state = DATA;
 		}
-
-		//State as disposed
-		state = DISPOSED;
-
+		
 		//Dipose neighboors
 		for (unsigned int i = 0; i < 6; i++)
 		{
-			if(neighbors[i] != nullptr && neighbors[i]->state != DISPOSED)
+			if(neighbors[i] != nullptr && neighbors[i]->state > DATA)
 			{
 				neighbors[i]->dispose(device);
 				delete neighbors[i];

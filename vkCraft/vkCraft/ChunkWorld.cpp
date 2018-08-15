@@ -59,8 +59,6 @@ public:
 		//Get node
 		ChunkNode *node = getChunkNode(index);
 
-		std::cout << "vkCraft: Node to get geometries from: " << node->index.x << ", " << node->index.y << ", " << node->index.z << std::endl;
-
 		node->getGeometries(&geometries, distance);
 
 		return geometries;
@@ -71,15 +69,15 @@ public:
 	 */
 	ChunkNode* getChunkNode(glm::ivec3 index)
 	{
-		glm::ivec3 offset = current->index - index;
+		//std::cout << "vkCraft: Requested chunk: " << index.x << ", " << index.y << ", " << index.z << std::endl;
 
-		std::cout << "vkCraft: Chunk index: " << index.x << ", " << index.y << ", " << index.z << std::endl;
-		std::cout << "vkCraft: Chunk offset: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
+		glm::ivec3 offset = current->index - index;
+		//std::cout << "vkCraft: Chunk offset: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
 
 		//X
 		if (offset.x > 0)
 		{
-			for (int x = 0; x <= offset.x; x++)
+			for (int x = 0; x < offset.x; x++)
 			{
 				if (current->neighbors[ChunkNode::LEFT] == nullptr)
 				{
@@ -91,7 +89,7 @@ public:
 		}
 		else if (offset.x < 0)
 		{
-			for (int x = offset.x; x <= 0; x++)
+			for (int x = offset.x; x < 0; x++)
 			{
 				if (current->neighbors[ChunkNode::RIGHT] == nullptr)
 				{
@@ -105,7 +103,7 @@ public:
 		//Y
 		if (offset.y > 0)
 		{
-			for (int y = 0; y <= offset.y; y++)
+			for (int y = 0; y < offset.y; y++)
 			{
 				if (current->neighbors[ChunkNode::DOWN] == nullptr)
 				{
@@ -117,7 +115,7 @@ public:
 		}
 		else if (offset.y < 0)
 		{
-			for (int y = offset.y; y <= 0; y++)
+			for (int y = offset.y; y < 0; y++)
 			{
 				if (current->neighbors[ChunkNode::UP] == nullptr)
 				{
@@ -131,7 +129,7 @@ public:
 		//Z
 		if (offset.z > 0)
 		{
-			for (int z = 0; z <= offset.z; z++)
+			for (int z = 0; z < offset.z; z++)
 			{
 				if (current->neighbors[ChunkNode::FRONT] == nullptr)
 				{
@@ -143,7 +141,7 @@ public:
 		}
 		else if (offset.z < 0)
 		{
-			for (int z = offset.y; z <= 0; z++)
+			for (int z = offset.z; z < 0; z++)
 			{
 				if (current->neighbors[ChunkNode::BACK] == nullptr)
 				{
@@ -153,6 +151,8 @@ public:
 				current = current->neighbors[ChunkNode::BACK];
 			}
 		}
+
+		//std::cout << "vkCraft: Obtained chunk: " << current->index.x << ", " << current->index.y << ", " << current->index.z << std::endl;
 
 		return current;
 	}
@@ -175,7 +175,7 @@ public:
 	 *
 	 * Nodes ares disposed recursively.
 	 */
-	void dispose(VkDevice *device)
+	void dispose(VkDevice &device)
 	{
 		root->dispose(device);
 		delete root;

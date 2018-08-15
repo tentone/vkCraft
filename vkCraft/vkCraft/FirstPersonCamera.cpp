@@ -14,6 +14,9 @@
 
 #include "Camera.cpp"
 
+/**
+ * A camera that can be controlled for FPS views.
+ */
 class FirstPersonCamera : public Camera
 {
 public:
