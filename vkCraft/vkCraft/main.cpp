@@ -191,26 +191,22 @@ public:
 		//Create geometries buffers (only created if they dont exist)
 		if (true || glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
-			double t = glfwGetTime();
+			//double t = glfwGetTime();
 
 			//World
+			//OK
 			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 5);
 
 			//If necessary create geometry buffers
 			for (int i = 0; i < geometries.size(); i++)
 			{
-				createGeometryBuffers(geometries[i]);
+				//BIG MEMORY LEAK
+				//createGeometryBuffers(geometries[i]);
 			}
 
-			//std::cout << "VkCraft: Update world time: " << (glfwGetTime() - t) << std::endl;
-		}
-
-		if (true || glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-		{
-			double t = glfwGetTime();
-
 			//Update render commands
-			recreateRenderingCommandBuffers();
+			//SMALL MEMORY LEAK
+			//recreateRenderingCommandBuffers();
 
 			//std::cout << "VkCraft: Recreate render buffers time: " << (glfwGetTime() - t) << std::endl;
 		}
