@@ -190,7 +190,7 @@ public:
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
 
 		//Create geometries buffers (only created if they dont exist)
-		if (true || glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		{
 			//double t = glfwGetTime();
 
@@ -1567,7 +1567,7 @@ public:
 		std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
 		//Errase required extensions from list
-		for (const auto& extension : availableExtensions)
+		for (VkExtensionProperties extension : availableExtensions)
 		{
 			requiredExtensions.erase(extension.extensionName);
 		}
@@ -1584,7 +1584,7 @@ public:
 			return { VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
 		}
 
-		for (const auto& availableFormat : availableFormats)
+		for (VkSurfaceFormatKHR availableFormat : availableFormats)
 		{
 			if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			{
@@ -1600,7 +1600,7 @@ public:
 	{
 		VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
 
-		for (const auto& availablePresentMode : availablePresentModes)
+		for (VkPresentModeKHR availablePresentMode : availablePresentModes)
 		{
 			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
@@ -1693,7 +1693,7 @@ public:
 		{
 			bool layerFound = false;
 
-			for (const auto& layerProperties : availableLayers)
+			for (VkLayerProperties layerProperties : availableLayers)
 			{
 				if (strcmp(layerName, layerProperties.layerName) == 0)
 				{
