@@ -42,14 +42,14 @@ public:
 	}
 
 	//Copy the contents of a buffer to another buffer (move to BufferUtils)
-	/*static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+	static void copyBuffer(Device *device, VkQueue *graphicsQueue, VkCommandPool *commandPool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 	{
-		VkCommandBuffer commandBuffer = CommandBufferUtils::beginSingleTimeCommands();
+		VkCommandBuffer commandBuffer = CommandBufferUtils::beginSingleTimeCommands(device, commandPool);
 
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = size;
 		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-		CommandBufferUtils::endSingleTimeCommands(commandBuffer);
-	}*/
+		CommandBufferUtils::endSingleTimeCommands(device, graphicsQueue, commandPool, &commandBuffer);
+	}
 };

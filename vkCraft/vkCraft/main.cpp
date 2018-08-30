@@ -507,10 +507,10 @@ public:
 		createInfo.ppEnabledExtensionNames = extensions.data();
 
 		//Check extensions available
-		std::cout << "GLFW Extensions:" << std::endl;
+		fprintf(stdout, "GLFW Extensions:\n");
 		for (int i = 0; i < extensions.size(); i++)
 		{
-			std::cout << extensions[i] << std::endl;
+			fprintf(stdout, "\t%s\n", extensions[i]);
 		}
 
 		if (enableValidationLayers)
@@ -535,10 +535,10 @@ public:
 		std::vector<VkExtensionProperties> vkExtensions(extensionCount);
 		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, vkExtensions.data());
 
-		std::cout << "Vulkan extensions:" << std::endl;
+		fprintf(stdout, "\nVulkan extensions:\n");
 		for (uint32_t i = 0; i < vkExtensions.size(); i++)
 		{
-			std::cout << vkExtensions[i].extensionName << std::endl;
+			fprintf(stdout, "\t%s\n", vkExtensions[i].extensionName);
 		}
 	}
 
@@ -573,19 +573,37 @@ public:
 	//Choose a physical device
 	void pickPhysicalDevice()
 	{
-		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+		uint32_t count = 0;
 
-		if (deviceCount == 0)
+		if (vkEnumeratePhysicalDevices(instance, &count, nullptr) != VK_SUCCESS || count == 0)
 		{
 			throw std::runtime_error("vkCraft: Not GPU with Vulkan support found");
 		}
 
-		std::vector<VkPhysicalDevice> devices(deviceCount);
-		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-		for (const auto& physical : devices)
+		std::vector<VkPhysicalDevice> devices(count);
+		vkEnumeratePhysicalDevices(instance, &count, devices.data());
+	
+		
+
+		for (VkPhysicalDevice physical : devices)
 		{
+			VkPhysicalDeviceProperties vpdp;
+			vkGetPhysicalDeviceProperties(physical, &vpdp);
+
+			fprintf(stdout, "\n%s:\n", vpdp.deviceName);
+			fprintf(stdout, "\tPhysical Device Type: %d ", vpdp.deviceType);
+			if (vpdp.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) fprintf(stdout, " (Discrete GPU)\n");
+			if (vpdp.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) fprintf(stdout, " (Integrated GPU)\n");
+			if (vpdp.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU) fprintf(stdout, " (Virtual GPU)\n");
+			if (vpdp.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) fprintf(stdout, " (CPU)\n");
+			fprintf(stdout, "\tPipeline Cache Size: %d\n", vpdp.pipelineCacheUUID[0]);
+			fprintf(stdout, "\tAPI version: %d\n", vpdp.apiVersion);
+			fprintf(stdout, "\tDriver version: %d\n", vpdp.apiVersion);
+			fprintf(stdout, "\tVendor ID: 0x%04x\n", vpdp.vendorID);
+			fprintf(stdout, "\tDevice ID: 0x%04x\n", vpdp.deviceID);
+			
+			//Check if device is suitable
 			if (isPhysicalDeviceSuitable(physical))
 			{
 				device.physical = physical;
@@ -1017,7 +1035,7 @@ public:
 
 		memcpy(vertexData, geometry->vertices.data(), (size_t)vertexBufferSize);
 		memcpy(indexData, geometry->indices.data(), (size_t)indexBufferSize);
-
+	
 		vkUnmapMemory(device.logical, vertexStagingBufferMemory);
 		vkUnmapMemory(device.logical, indexStagingBufferMemory);
 
@@ -1026,14 +1044,15 @@ public:
 		BufferUtils::createBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->indexBuffer, geometry->indexBufferMemory);
 
 		//Copy from CPU buffer to GPU buffer
-		copyBuffer(vertexStagingBuffer, geometry->vertexBuffer, vertexBufferSize);
-		copyBuffer(indexStagingBuffer, geometry->indexBuffer, indexBufferSize);
+		BufferUtils::copyBuffer(&device, &graphicsQueue, &commandPool, vertexStagingBuffer, geometry->vertexBuffer, vertexBufferSize);
+		BufferUtils::copyBuffer(&device, &graphicsQueue, &commandPool, indexStagingBuffer, geometry->indexBuffer, indexBufferSize);
 
 		//Clean the stagging (CPU) buffer
 		vkDestroyBuffer(device.logical, vertexStagingBuffer, nullptr);
 		vkFreeMemory(device.logical, vertexStagingBufferMemory, nullptr);
 		vkDestroyBuffer(device.logical, indexStagingBuffer, nullptr);
 		vkFreeMemory(device.logical, indexStagingBufferMemory, nullptr);
+
 	}
 
 	void createDescriptorPool()
@@ -1113,18 +1132,6 @@ public:
 		descriptorWrites[1].pImageInfo = &imageInfo;
 
 		vkUpdateDescriptorSets(device.logical, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-	}
-
-	//Copy the contents of a buffer to another buffer (move to BufferUtils)
-	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
-	{
-		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
-
-		VkBufferCopy copyRegion = {};
-		copyRegion.size = size;
-		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-		endSingleTimeCommands(commandBuffer);
 	}
 
 	//Handle image layout transitions
@@ -1540,11 +1547,10 @@ public:
 		VkPhysicalDeviceFeatures supportedFeatures;
 		vkGetPhysicalDeviceFeatures(physical, &supportedFeatures);
 
-		Device test;
-		test.physical = physical;
+		Device device = { physical };
 
 		//Get queue family indices
-		QueueFamilyIndices indices = test.getQueueFamilyIndices(surface);
+		QueueFamilyIndices indices = device.getQueueFamilyIndices(surface);
 
 		return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 	}

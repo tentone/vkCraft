@@ -21,8 +21,19 @@
  - World chunks are ornganized as linked list of chunks.
  - Each chunk holds its data and 6 pointers to its neighbors (left, right, up, down, front, back).
 
-## Graphics
- - The renrerer was built on Vulkan.
+       U
+       |  B
+       | /
+       |/
+L ---- N ---- R
+      /|
+     / |
+    F  |
+       D
+
+## References
+ - Mike Bailey's Vulkan Guide (http://web.engr.oregonstate.edu/~mjb/vulkan/)
+ - Alexander Overvoorde Vulkan Guide (https://vulkan-tutorial.com/Introduction)
 
 ## License
  - The project is under MIT license (Available on the project repository).
