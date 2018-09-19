@@ -195,7 +195,7 @@ public:
 			//double t = glfwGetTime();
 
 			//World
-			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 4);
+			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 5);
 
 			//If necessary create geometry buffers
 			for (int i = 0; i < geometries.size(); i++)
@@ -1008,51 +1008,6 @@ public:
 		{
 			throw std::runtime_error("vkCraft: Failed to create command pool");
 		}
-	}
-
-	//Create vertex buffer
-	void createGeometryBuffers(Geometry *geometry)
-	{
-		if (geometry->hasBuffers() || geometry->indices.size() == 0 || geometry->vertices.size() == 0)
-		{
-			return;
-		}
-
-		VkDeviceSize vertexBufferSize = sizeof(Vertex) * geometry->vertices.size();
-		VkDeviceSize indexBufferSize = sizeof(uint32_t) * geometry->indices.size();
-
-		VkBuffer indexStagingBuffer, vertexStagingBuffer;
-		VkDeviceMemory indexStagingBufferMemory, vertexStagingBufferMemory;
-
-		//Create CPU buffers
-		BufferUtils::createBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingBufferMemory);
-		BufferUtils::createBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingBufferMemory);
-
-		//Map memory
-		void *vertexData, *indexData;
-		vkMapMemory(device.logical, vertexStagingBufferMemory, 0, vertexBufferSize, 0, &vertexData);
-		vkMapMemory(device.logical, indexStagingBufferMemory, 0, indexBufferSize, 0, &indexData);
-
-		memcpy(vertexData, geometry->vertices.data(), (size_t)vertexBufferSize);
-		memcpy(indexData, geometry->indices.data(), (size_t)indexBufferSize);
-	
-		vkUnmapMemory(device.logical, vertexStagingBufferMemory);
-		vkUnmapMemory(device.logical, indexStagingBufferMemory);
-
-		//Create GPU buffers
-		BufferUtils::createBuffer(device, vertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->vertexBuffer, geometry->vertexBufferMemory);
-		BufferUtils::createBuffer(device, indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, geometry->indexBuffer, geometry->indexBufferMemory);
-
-		//Copy from CPU buffer to GPU buffer
-		BufferUtils::copyBuffer(&device, &graphicsQueue, &commandPool, vertexStagingBuffer, geometry->vertexBuffer, vertexBufferSize);
-		BufferUtils::copyBuffer(&device, &graphicsQueue, &commandPool, indexStagingBuffer, geometry->indexBuffer, indexBufferSize);
-
-		//Clean the stagging (CPU) buffer
-		vkDestroyBuffer(device.logical, vertexStagingBuffer, nullptr);
-		vkFreeMemory(device.logical, vertexStagingBufferMemory, nullptr);
-		vkDestroyBuffer(device.logical, indexStagingBuffer, nullptr);
-		vkFreeMemory(device.logical, indexStagingBufferMemory, nullptr);
-
 	}
 
 	void createDescriptorPool()

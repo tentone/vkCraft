@@ -1,13 +1,14 @@
 # vkCraft
-
  - Minecraft clone written with C++ and Vulkan
  - Project made as a way of learning about the vulkan API.
+ - There is no actual game mechanics implemented, just rendering and navigation around the world.
 
 ## How to run
  - Download GLW, GLFW and the LunarG Vulkan SDK.
  - Open the solution in Visual Studio.
  - Configure project with the downloaded libs.
  - Build and run project.
+ - Use WASD to move the mouse to look around and the SPACE and C key to go up and down.
 
 ## Screenshots
  - TODO

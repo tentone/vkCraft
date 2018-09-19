@@ -14,12 +14,13 @@ public:
 		width = _width;
 		height = _height;
 		depth = _depth;
-
-		generate();
 	}
 
-	void generate()
+	void generate(Device *device, VkQueue *graphicsQueue, VkCommandPool *commandPool)
 	{
+		std::vector<uint32_t> indices;
+		std::vector<Vertex> vertices;
+
 		vertices =
 		{
 			//Front face
@@ -86,5 +87,7 @@ public:
 			vertices[i].pos.y *= height / 2.0;
 			vertices[i].pos.z *= depth / 2.0;
 		}
+
+		createGeometryBuffers(device, graphicsQueue, commandPool, &indices, &vertices);
 	}
 };
