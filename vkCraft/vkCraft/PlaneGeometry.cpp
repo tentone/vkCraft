@@ -7,11 +7,8 @@
 class PlaneGeometry : public Geometry
 {
 public:
-	void generate(Device *device, VkQueue *graphicsQueue, VkCommandPool *commandPool)
+	void generate()
 	{
-		std::vector<uint32_t> indices;
-		std::vector<Vertex> vertices;
-
 		vertices =
 		{
 			{ { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
@@ -24,7 +21,5 @@ public:
 		{
 			0, 1, 2, 2, 3, 0
 		};
-
-		createGeometryBuffers(device, graphicsQueue, commandPool, &indices, &vertices);
 	}
 };

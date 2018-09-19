@@ -8,9 +8,7 @@
 class CommandBufferUtils
 {
 public:
-	/**
-	 * Begin a single time use command buffer, using a device and command pool.
-	 */
+	//Begin a single time use command buffer
 	static VkCommandBuffer beginSingleTimeCommands(Device *device, VkCommandPool *commandPool)
 	{
 		VkCommandBufferAllocateInfo allocInfo = {};
@@ -31,9 +29,7 @@ public:
 		return commandBuffer;
 	}
 
-	/**
-	 * End single time command buffer.
-	 */
+	//End single time command buffer
 	static void endSingleTimeCommands(Device *device, VkQueue *graphicsQueue, VkCommandPool *commandPool, VkCommandBuffer *commandBuffer)
 	{
 		vkEndCommandBuffer(*commandBuffer);

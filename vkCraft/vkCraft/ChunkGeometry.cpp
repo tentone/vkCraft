@@ -56,10 +56,11 @@ public:
 	/**
 	 * Generate new geometry data for the attached chunk.
 	 */
-	void generate(Chunk *chunk, Device *device, VkQueue *graphicsQueue, VkCommandPool *commandPool)
-	{
-		std::vector<uint32_t> indices;
-		std::vector<Vertex> vertices;
+	void generate(Chunk *chunk)
+	{	
+		vertices.clear();
+		indices.clear();
+		
 		int size = 0;
 		glm::ivec3 start = chunk->index;
 		start *= Chunk::SIZE;
@@ -199,7 +200,5 @@ public:
 				}
 			}
 		}
-
-		createGeometryBuffers(device, graphicsQueue, commandPool, &indices, &vertices);
 	}
 };
