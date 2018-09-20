@@ -195,13 +195,13 @@ public:
 			//double t = glfwGetTime();
 
 			//World
-			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 5);
+			std::vector<Geometry*> geometries = world.getGeometries(camera.position, &device, &graphicsQueue, &commandPool, 5);
 
 			//If necessary create geometry buffers
-			for (int i = 0; i < geometries.size(); i++)
+			/*for (int i = 0; i < geometries.size(); i++)
 			{
-				createGeometryBuffers(geometries[i]);
-			}
+				geometries[i]->createGeometryBuffers(&device, &graphicsQueue, &commandPool);
+			}*/
 
 			//Update render commands
 			recreateRenderingCommandBuffers();
@@ -1390,7 +1390,7 @@ public:
 					vkCmdBindVertexBuffers(renderCommandBuffers[i], 0, 1, &(world.geometries[j]->vertexBuffer), offsets);
 					vkCmdBindIndexBuffer(renderCommandBuffers[i], world.geometries[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 					vkCmdBindDescriptorSets(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-					vkCmdDrawIndexed(renderCommandBuffers[i], static_cast<uint32_t>(world.geometries[j]->indices.size()), 1, 0, 0, 0);
+					vkCmdDrawIndexed(renderCommandBuffers[i], world.geometries[j]->indexSize, 1, 0, 0, 0);
 				}
 			}
 			

@@ -83,12 +83,12 @@ public:
 	/**
 	 * Get geometries from this node and its neighboors recursively.
 	 */
-	void getGeometries(std::vector<Geometry*> *geometries, int recursive = 0)
+	void getGeometries(std::vector<Geometry*> *geometries, Device *device, VkQueue *graphicsQueue, VkCommandPool *commandPool, int recursive = 0)
 	{
 		//Generate geometry if necessary
 		if(state < GEOMETRY)
 		{
-			generateGeometry();
+			generateGeometry(device, graphicsQueue, commandPool);
 		}
 
 		//Check if geometries contains geometry, it it does not add new
@@ -107,7 +107,7 @@ public:
 
 			for (unsigned int i = 0; i < 6; i++)
 			{
-				neighbors[i]->getGeometries(geometries, recursive - 1);
+				neighbors[i]->getGeometries(geometries, device, graphicsQueue, commandPool, recursive - 1);
 			}
 		}
 	}
@@ -174,7 +174,7 @@ public:
 	/**
 	 * Generate geometry for this node.
 	 */
-	void generateGeometry()
+	void generateGeometry(Device *device, VkQueue *graphicsQueue, VkCommandPool *commandPool)
 	{
 		//If it still has no chunk data generate it
 		if (state < DATA)
@@ -183,7 +183,7 @@ public:
 		}
 
 		state = GEOMETRY;
-		geometry.generate(&chunk);
+		geometry.generate(&chunk, device, graphicsQueue, commandPool);
 	}
 
 	/**
