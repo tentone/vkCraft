@@ -18,7 +18,6 @@ public:
 
 	//Indices
 	VkBuffer indexBuffer = VK_NULL_HANDLE;
-	uint32_t indexSize = 0;
 	VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
 
 	/**
@@ -43,8 +42,6 @@ public:
 		{
 			return;
 		}
-
-		indexSize = static_cast<uint32_t>(indices->size());
 
 		VkDeviceSize vertexBufferSize = sizeof(Vertex) * vertices->size();
 		VkDeviceSize indexBufferSize = sizeof(uint32_t) * indices->size();

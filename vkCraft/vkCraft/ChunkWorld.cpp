@@ -50,7 +50,7 @@ public:
 	 *
 	 * If there are no chunk available new chunks will be created.
 	 */
-	std::vector<Geometry*> getGeometries(glm::vec3 position, Device *device, VkQueue *graphicsQueue, VkCommandPool *commandPool, int distance)
+	std::vector<Geometry*> getGeometries(glm::vec3 position, int distance)
 	{
 		glm::ivec3 index = { position.x / Chunk::SIZE, position.y / Chunk::SIZE , position.z / Chunk::SIZE };
 		
@@ -60,7 +60,7 @@ public:
 		//Get node
 		ChunkNode *node = getChunkNode(index);
 
-		node->getGeometries(&geometries, device, graphicsQueue, commandPool, distance);
+		node->getGeometries(&geometries, distance);
 
 		return geometries;
 	}
