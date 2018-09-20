@@ -107,11 +107,6 @@ public:
 							size += 4;
 						}
 
-						/*if (x == Chunk::SIZE - 1 || x == 0 || y == Chunk::SIZE - 1 || y == 0 || z == Chunk::SIZE - 1 || z == 0)
-						{
-							continue;
-						}*/
-
 						//Bottom face
 						if (y == 0 || chunk->data[x][y - 1][z] == Chunk::EMPTY)
 						{
