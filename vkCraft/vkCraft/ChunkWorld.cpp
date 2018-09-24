@@ -44,6 +44,14 @@ public:
 		root = new ChunkNode(glm::ivec3(0, 0, 0), seed);
 		current = root;
 	}
+	
+	/**
+	 * Get world index from world position.
+	 */
+	glm::ivec3 getIndex(glm::vec3 position)
+	{
+		return { position.x / Chunk::SIZE, position.y / Chunk::SIZE , position.z / Chunk::SIZE };
+	}
 
 	/**
 	 * Update world chunks based on position.
@@ -52,14 +60,10 @@ public:
 	 */
 	std::vector<Geometry*> getGeometries(glm::vec3 position, int distance)
 	{
-		glm::ivec3 index = { position.x / Chunk::SIZE, position.y / Chunk::SIZE , position.z / Chunk::SIZE };
-		
-		//Clear geometries vector
+		glm::ivec3 index = getIndex(position);
 		geometries.clear();
 
-		//Get node
 		ChunkNode *node = getChunkNode(index);
-
 		node->getGeometries(&geometries, distance);
 
 		return geometries;

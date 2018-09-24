@@ -113,6 +113,7 @@ public:
 	//Object3D and camera
 	Object3D model;
 	FirstPersonCamera camera;
+	glm::ivec3 cameraIndex;
 	UniformBufferObject uniformBuf;
 	double time, delta;
 
@@ -189,25 +190,28 @@ public:
 		camera.update(window, delta);
 		camera.updateProjectionMatrix((float)swapChainExtent.width, (float)swapChainExtent.height);
 
-		//Create geometries buffers (only created if they dont exist)
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		glm::ivec3 index = world.getIndex(camera.position);
+
+		//Create geometries buffers
+		if (index != cameraIndex)
 		{
 			//double t = glfwGetTime();
 
-			//World
-			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 3);
+			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 4);
 
-			//If necessary create geometry buffers
 			for (int i = 0; i < geometries.size(); i++)
 			{
 				createGeometryBuffers(geometries[i]);
 			}
 
-			//Update render commands
 			recreateRenderingCommandBuffers();
+
+			cameraIndex = index;
 
 			//std::cout << "VkCraft: Recreate render buffers time: " << (glfwGetTime() - t) << std::endl;
 		}
+
+		
 
 		//Update UBO
 		uniformBuf.model = model.matrix;
