@@ -10,12 +10,12 @@ ChunkNode::ChunkNode(glm::ivec3 _index, int _seed)
 	generateData();
 }
 
-void ChunkNode::getGeometries(std::vector<Geometry*> *geometries, int recursive)
+void ChunkNode::getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *world, int recursive)
 {
 	//Generate geometry if necessary
 	if(state < GEOMETRY)
 	{
-		generateGeometry();
+		generateGeometry(world);
 	}
 
 	//Check if geometries contains geometry, it it does not add new
@@ -34,7 +34,7 @@ void ChunkNode::getGeometries(std::vector<Geometry*> *geometries, int recursive)
 
 		for (unsigned int i = 0; i < 6; i++)
 		{
-			neighbors[i]->getGeometries(geometries, recursive - 1);
+			neighbors[i]->getGeometries(geometries, world, recursive - 1);
 		}
 	}
 }
@@ -92,7 +92,7 @@ void ChunkNode::generateData()
 	chunk.generate(seed);
 }
 
-void ChunkNode::generateGeometry()
+void ChunkNode::generateGeometry(ChunkWorld *world)
 {
 	//If it still has no chunk data generate it
 	if (state < DATA)
@@ -101,7 +101,7 @@ void ChunkNode::generateGeometry()
 	}
 
 	state = GEOMETRY;
-	geometry.generate(&chunk);
+	geometry.generate(&chunk, world);
 }
 
 void ChunkNode::dispose(VkDevice &device)

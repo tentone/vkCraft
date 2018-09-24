@@ -12,7 +12,11 @@
 
 #include "Geometry.cpp"
 #include "Vertex.cpp"
+
+#include "ChunkWorld.h"
 #include "Chunk.h"
+
+class ChunkWorld;
 
 /**
  * Geometry to represent a chunk in the world.
@@ -52,5 +56,5 @@ public:
 	/**
 	 * Generate new geometry data for the attached chunk.
 	 */
-	void generate(Chunk *chunk);
+	void generate(Chunk *chunk, ChunkWorld *world);
 };

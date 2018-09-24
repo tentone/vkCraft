@@ -8,7 +8,7 @@ glm::vec4 ChunkGeometry::calculateUV(int x, int y, int size)
 	return glm::vec4(step * x, step * y, step * x + step, step * y + step);
 }
 
-void ChunkGeometry::generate(Chunk *chunk)
+void ChunkGeometry::generate(Chunk *chunk, ChunkWorld *world)
 {	
 	vertices.clear();
 	indices.clear();
@@ -24,6 +24,15 @@ void ChunkGeometry::generate(Chunk *chunk)
 			for (int y = 0; y < Chunk::SIZE; y++)
 			{
 				int value = chunk->data[x][y][z];
+
+				//Global index
+				glm::ivec3 globalidx = { start.x + x, start.y + y, start.z + z };
+
+				//Check data
+				if (value != chunk->data[x][y][z])
+				{
+					std::cout << "VkCraft: The world returned a wrong value." << std::endl;
+				}
 
 				if (value != Chunk::EMPTY)
 				{
@@ -41,6 +50,7 @@ void ChunkGeometry::generate(Chunk *chunk)
 					float nx = ix - 0.5f;
 					float ny = iy - 0.5f;
 					float nz = iz - 0.5f;
+					
 
 					//Top face
 					if (y == Chunk::SIZE - 1 || chunk->data[x][y + 1][z] == Chunk::EMPTY)

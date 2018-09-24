@@ -5,6 +5,8 @@
 #include "Device.cpp"
 #include "ChunkNode.h"
 
+class ChunkNode;
+
 /**
  * Chunk world is used to access and manipulate chunk data.
  *

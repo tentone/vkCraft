@@ -2,7 +2,12 @@
 
 #include "Chunk.h"
 #include "ChunkGeometry.h"
+#include "ChunkWorld.h"
+
 #include <algorithm>
+
+class ChunkWorld;
+class ChunkGeometry;
 
 class ChunkNode
 {
@@ -76,7 +81,7 @@ public:
 	/**
 	 * Get geometries from this node and its neighboors recursively.
 	 */
-	void getGeometries(std::vector<Geometry*> *geometries, int recursive = 0);
+	void getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *world, int recursive = 0);
 
 	/**
 	 * Generate neighbors for a node.
@@ -91,7 +96,7 @@ public:
 	/**
 	 * Generate geometry for this node.
 	 */
-	void generateGeometry();
+	void generateGeometry(ChunkWorld *world);
 
 	/**
 	 * Dispose all the geometries attached to this node recursively.

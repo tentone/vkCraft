@@ -22,7 +22,7 @@ std::vector<Geometry*> ChunkWorld::getGeometries(glm::vec3 position, int distanc
 	geometries.clear();
 
 	ChunkNode *node = getChunkNode(index);
-	node->getGeometries(&geometries, distance);
+	node->getGeometries(&geometries, this, distance);
 
 	return geometries;
 }
