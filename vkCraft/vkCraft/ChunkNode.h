@@ -1,0 +1,100 @@
+#pragma once
+
+#include "Chunk.h"
+#include "ChunkGeometry.h"
+#include <algorithm>
+
+class ChunkNode
+{
+public:
+	/**
+	 * Uninitiaalized state, the node has no chunk data and geometry.
+	 */
+	static const int UNINITIALIZED = 0;
+
+	/**
+	 * The node only has chunk data.
+	 */
+	static const int DATA = 1;
+
+	/**
+	 * The node and chunk and geometry data.
+	 */
+	static const int GEOMETRY = 2;
+
+	/*
+	 * left is - x, right + x
+	 * front is - z, back is + z
+	 * up is + y, down is - y
+	 */
+	static const int LEFT = 0;
+	static const int RIGHT = 1;
+	static const int FRONT = 2;
+	static const int BACK = 3;
+	static const int UP = 4;
+	static const int DOWN = 5;
+
+	/**
+	 * Chunk data.
+	 */
+	Chunk chunk;
+
+	/**
+	 * Geometry to represent this chunk.
+	 */
+	ChunkGeometry geometry;
+
+	/**
+	 * Node state.
+	 */
+	int state;
+
+	/**
+	 * World seed.
+	 */
+	int seed;
+
+	/**
+	 * Node index relataive to the root.
+	 */
+	glm::ivec3 index;
+
+	/**
+	 * Numeric timestamp, that can be compared with a world timestamp and updated on generation.
+	 *
+	 * Can be used to avoid recursive propagation of updates in nodes.
+	 */
+	int timestamp = -1;
+
+	/**
+	 * Pointer to neighboor chunks.
+	 */
+	ChunkNode *neighbors[6] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+
+	ChunkNode(glm::ivec3 _index, int _seed);
+
+	/**
+	 * Get geometries from this node and its neighboors recursively.
+	 */
+	void getGeometries(std::vector<Geometry*> *geometries, int recursive = 0);
+
+	/**
+	 * Generate neighbors for a node.
+	 */
+	void generateNeighbors(int recursive = 0);
+
+	/**
+	* Generate data for this node.
+	*/
+	void generateData();
+
+	/**
+	 * Generate geometry for this node.
+	 */
+	void generateGeometry();
+
+	/**
+	 * Dispose all the geometries attached to this node recursively.
+	 */
+	void dispose(VkDevice &device);
+};

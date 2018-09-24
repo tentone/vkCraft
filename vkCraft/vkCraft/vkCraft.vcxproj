@@ -32,6 +32,12 @@
     <ClCompile Include="UniformBufferObject.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Chunk.h" />
+    <ClInclude Include="ChunkGeometry.h" />
+    <ClInclude Include="ChunkNode.h" />
+    <ClInclude Include="ChunkWorld.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{E98F73ED-7BB3-4803-A6D4-EC7E870EEF3F}</ProjectGuid>

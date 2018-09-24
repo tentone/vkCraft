@@ -45,7 +45,7 @@
 #include "Object3D.cpp"
 #include "FirstPersonCamera.cpp"
 
-#include "ChunkWorld.cpp"
+#include "ChunkWorld.h"
 
 class VkCraft
 {
@@ -113,7 +113,7 @@ public:
 	//Object3D and camera
 	Object3D model;
 	FirstPersonCamera camera;
-	glm::ivec3 cameraIndex;
+	glm::ivec3 cameraIndex = {1, 2, 3};
 	UniformBufferObject uniformBuf;
 	double time, delta;
 
@@ -195,7 +195,7 @@ public:
 		//Create geometries buffers
 		if (index != cameraIndex)
 		{
-			//double t = glfwGetTime();
+			double t = glfwGetTime();
 
 			std::vector<Geometry*> geometries = world.getGeometries(camera.position, 4);
 
@@ -208,10 +208,8 @@ public:
 
 			cameraIndex = index;
 
-			//std::cout << "VkCraft: Recreate render buffers time: " << (glfwGetTime() - t) << std::endl;
+			std::cout << "VkCraft: Get world geometries took " << (glfwGetTime() - t) << "s." << std::endl;
 		}
-
-		
 
 		//Update UBO
 		uniformBuf.model = model.matrix;

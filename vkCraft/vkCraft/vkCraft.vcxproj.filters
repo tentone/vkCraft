@@ -89,4 +89,18 @@
       <Filter>Source Files\chunk</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ChunkWorld.h">
+      <Filter>Source Files\chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkNode.h">
+      <Filter>Source Files\chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="Chunk.h">
+      <Filter>Source Files\chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkGeometry.h">
+      <Filter>Source Files\chunk</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
