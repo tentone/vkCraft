@@ -14,6 +14,7 @@ void ChunkGeometry::generate(Chunk *chunk, ChunkWorld *world)
 	indices.clear();
 
 	int size = 0;
+
 	glm::ivec3 start = chunk->index;
 	start *= Chunk::SIZE;
 
@@ -26,13 +27,13 @@ void ChunkGeometry::generate(Chunk *chunk, ChunkWorld *world)
 				int value = chunk->data[x][y][z];
 
 				//Global index
-				glm::ivec3 globalidx = { start.x + x, start.y + y, start.z + z };
+				glm::ivec3 globalPosition = { start.x + x, start.y + y, start.z + z };
 
 				//Check data
-				if (value != chunk->data[x][y][z])
+				/*if (value != world->getBlock(globalPosition))
 				{
 					std::cout << "VkCraft: The world returned a wrong value." << std::endl;
-				}
+				}*/
 
 				if (value != Chunk::EMPTY)
 				{

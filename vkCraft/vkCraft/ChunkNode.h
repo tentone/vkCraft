@@ -47,7 +47,7 @@ public:
 	/**
 	 * Geometry to represent this chunk.
 	 */
-	ChunkGeometry geometry;
+	ChunkGeometry *geometry;
 
 	/**
 	 * Node state.

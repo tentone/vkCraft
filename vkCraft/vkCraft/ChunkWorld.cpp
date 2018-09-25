@@ -32,6 +32,7 @@ ChunkNode* ChunkWorld::getChunkNode(glm::ivec3 index)
 	//std::cout << "vkCraft: Requested chunk: " << index.x << ", " << index.y << ", " << index.z << std::endl;
 
 	glm::ivec3 offset = current->index - index;
+
 	//std::cout << "vkCraft: Chunk offset: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
 
 	//X
@@ -119,8 +120,7 @@ ChunkNode* ChunkWorld::getChunkNode(glm::ivec3 index)
 
 int ChunkWorld::getBlock(glm::ivec3 position)
 {
-	glm::ivec3 index = { position.x / Chunk::SIZE, position.y / Chunk::SIZE , position.z / Chunk::SIZE };
-	ChunkNode *node = getChunkNode(index);
+	ChunkNode *node = getChunkNode(getIndex(position));
 
 	return node->chunk.data[position.x % Chunk::SIZE][position.y % Chunk::SIZE][position.z % Chunk::SIZE];
 }

@@ -7,6 +7,7 @@ ChunkNode::ChunkNode(glm::ivec3 _index, int _seed)
 	index = _index;
 	state = UNINITIALIZED;
 	chunk.setIndex(_index);
+	geometry = new ChunkGeometry();
 	generateData();
 }
 
@@ -19,9 +20,9 @@ void ChunkNode::getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *wo
 	}
 
 	//Check if geometries contains geometry, it it does not add new
-	if (std::find(geometries->begin(), geometries->end(), &geometry) == geometries->end())
+	if (std::find(geometries->begin(), geometries->end(), geometry) == geometries->end())
 	{
-		geometries->push_back(&geometry);
+		geometries->push_back(geometry);
 	}
 	else
 	{
@@ -101,7 +102,7 @@ void ChunkNode::generateGeometry(ChunkWorld *world)
 	}
 
 	state = GEOMETRY;
-	geometry.generate(&chunk, world);
+	geometry->generate(&chunk, world);
 }
 
 void ChunkNode::dispose(VkDevice &device)
@@ -109,7 +110,7 @@ void ChunkNode::dispose(VkDevice &device)
 	//Check if the geometry has buffers
 	if (state > DATA)
 	{
-		geometry.dispose(device);
+		geometry->dispose(device);
 		state = DATA;
 	}
 		
