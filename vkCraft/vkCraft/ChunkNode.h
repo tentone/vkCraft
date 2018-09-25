@@ -1,13 +1,13 @@
 #pragma once
 
+#include <algorithm>
+#include "Device.h"
+#include "ChunkWorld.h"
 #include "Chunk.h"
 #include "ChunkGeometry.h"
-#include "ChunkWorld.h"
 
-#include <algorithm>
-
-class ChunkWorld;
 class ChunkGeometry;
+class ChunkWorld;
 
 class ChunkNode
 {
