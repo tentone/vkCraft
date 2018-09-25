@@ -8,7 +8,7 @@ glm::vec4 ChunkGeometry::calculateUV(int x, int y, int size)
 	return glm::vec4(step * x, step * y, step * x + step, step * y + step);
 }
 
-void ChunkGeometry::generate(Chunk *chunk)
+void ChunkGeometry::generate(Chunk *chunk, ChunkWorld *world)
 {	
 	vertices.clear();
 	indices.clear();

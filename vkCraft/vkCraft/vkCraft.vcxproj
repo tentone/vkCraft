@@ -33,6 +33,7 @@
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoxGeometry.h" />
     <ClInclude Include="BufferUtils.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Chunk.h" />
@@ -45,6 +46,7 @@
     <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="Object3D.h" />
+    <ClInclude Include="PlaneGeometry.h" />
     <ClInclude Include="QueueFamilyIndices.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Vertex.h" />

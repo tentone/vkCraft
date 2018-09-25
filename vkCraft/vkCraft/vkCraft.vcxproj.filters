@@ -135,5 +135,11 @@
     <ClInclude Include="FirstPersonCamera.h">
       <Filter>Source Files\objects</Filter>
     </ClInclude>
+    <ClInclude Include="BoxGeometry.h">
+      <Filter>Source Files\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="PlaneGeometry.h">
+      <Filter>Source Files\geometry</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
