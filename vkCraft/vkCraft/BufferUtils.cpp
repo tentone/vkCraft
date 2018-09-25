@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-#include "Device.cpp"
+#include "Device.h"
 #include "CommandBufferUtils.cpp"
 
 class BufferUtils

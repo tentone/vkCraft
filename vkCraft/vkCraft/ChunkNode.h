@@ -7,7 +7,6 @@
 #include <algorithm>
 
 class ChunkWorld;
-class ChunkGeometry;
 
 class ChunkNode
 {

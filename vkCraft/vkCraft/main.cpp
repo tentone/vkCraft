@@ -33,7 +33,7 @@
 #include <set>
 #include <ctime>
 
-#include "Device.cpp"
+#include "Device.h"
 #include "BufferUtils.cpp"
 #include "QueueFamilyIndices.cpp"
 #include "SwapChainSupportDetails.cpp"

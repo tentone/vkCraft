@@ -2,7 +2,8 @@
 
 #include <vector>
 
-#include "Device.cpp"
+#include "Device.h"
+#include "Geometry.h"
 #include "ChunkNode.h"
 
 class ChunkNode;

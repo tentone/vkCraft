@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "Geometry.cpp"
-#include "Vertex.cpp"
+#include "Geometry.h"
+#include "Vertex.h"
 
 class PlaneGeometry : public Geometry
 {

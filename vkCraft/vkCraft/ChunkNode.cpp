@@ -101,7 +101,7 @@ void ChunkNode::generateGeometry(ChunkWorld *world)
 	}
 
 	state = GEOMETRY;
-	geometry.generate(&chunk, world);
+	geometry.generate(&chunk);
 }
 
 void ChunkNode::dispose(VkDevice &device)
