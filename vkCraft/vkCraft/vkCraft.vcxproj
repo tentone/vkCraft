@@ -26,19 +26,27 @@
     <ClCompile Include="PlaneGeometry.cpp" />
     <ClCompile Include="QueueFamilyIndices.cpp" />
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="SwapChainSupportDetails.cpp" />
+    <ClCompile Include="SwapChainSupportDetails.h" />
     <ClCompile Include="Object3D.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="UniformBufferObject.cpp" />
+    <ClCompile Include="UniformBufferObject.h" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BufferUtils.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="ChunkGeometry.h" />
     <ClInclude Include="ChunkNode.h" />
     <ClInclude Include="ChunkWorld.h" />
+    <ClInclude Include="CommandBufferUtils.h" />
     <ClInclude Include="Device.h" />
+    <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="FirstPersonCamera.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Object3D.h" />
+    <ClInclude Include="QueueFamilyIndices.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

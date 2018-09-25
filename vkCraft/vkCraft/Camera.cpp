@@ -1,43 +1,29 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "Camera.h"
 
-#include "Object3D.cpp"
-
-class Camera : public Object3D
+Camera::Camera(double _fov, double _near, double _far)
 {
-public:
-	glm::mat4 projection;
-	double aspect;
-	double near, far, fov;
+	fov = _fov;
+	near = _near;
+	far = _far;
+}
 
-	Camera(double _fov = 60.0, double _near = 0.1, double _far = 1000.0)
-	{
-		fov = _fov;
-		near = _near;
-		far = _far;
-	}
+void Camera::updateMatrix()
+{
+	matrix = glm::translate(glm::mat4(), position);
+	matrix = glm::rotate(matrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	matrix = glm::rotate(matrix, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+	matrix = glm::rotate(matrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	matrix = glm::scale(matrix, scale);
+	matrix = glm::inverse(matrix);
+}
 
-	void virtual updateMatrix()
-	{
-		matrix = glm::translate(glm::mat4(), position);
-		matrix = glm::rotate(matrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-		matrix = glm::rotate(matrix, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-		matrix = glm::rotate(matrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-		matrix = glm::scale(matrix, scale);
-		matrix = glm::inverse(matrix);
-	}
+void Camera::updateProjectionMatrix(float width, float height)
+{
+	aspect = width / height;
+	projection = glm::perspective(glm::radians(fov), aspect, near, far);
 
-	void updateProjectionMatrix(float width, float height)
-	{
-		aspect = width / height;
-		projection = glm::perspective(glm::radians(fov), aspect, near, far);
-
-		//Fix Y direction from OpenGL to Vulkan
-		projection[1][1] *= -1;
-	}
-};
+	//Fix Y direction from OpenGL to Vulkan
+	projection[1][1] *= -1;
+}

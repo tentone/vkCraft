@@ -7,7 +7,7 @@
 #include <vector>
 #include <iostream>
 
-#include "QueueFamilyIndices.cpp"
+#include "QueueFamilyIndices.h"
 
 /**
  * The device class handles everything related with logical and physical device configuration.

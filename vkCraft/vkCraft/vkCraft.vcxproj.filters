@@ -58,9 +58,6 @@
     <ClCompile Include="QueueFamilyIndices.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="SwapChainSupportDetails.cpp">
-      <Filter>Source Files\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="FirstPersonCamera.cpp">
       <Filter>Source Files\objects</Filter>
     </ClCompile>
@@ -79,14 +76,17 @@
     <ClCompile Include="CommandBufferUtils.cpp">
       <Filter>Source Files\renderer\buffers</Filter>
     </ClCompile>
-    <ClCompile Include="UniformBufferObject.cpp">
-      <Filter>Source Files\renderer\buffers</Filter>
-    </ClCompile>
     <ClCompile Include="ChunkWorld.cpp">
       <Filter>Source Files\chunk</Filter>
     </ClCompile>
     <ClCompile Include="ChunkNode.cpp">
       <Filter>Source Files\chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="UniformBufferObject.h">
+      <Filter>Source Files\renderer\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="SwapChainSupportDetails.h">
+      <Filter>Source Files\renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +110,30 @@
     </ClInclude>
     <ClInclude Include="Device.h">
       <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferUtils.h">
+      <Filter>Source Files\renderer\buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandBufferUtils.h">
+      <Filter>Source Files\renderer\buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="QueueFamilyIndices.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Source Files\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="FileUtils.h">
+      <Filter>Source Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Object3D.h">
+      <Filter>Source Files\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Source Files\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="FirstPersonCamera.h">
+      <Filter>Source Files\objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

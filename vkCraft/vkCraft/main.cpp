@@ -34,16 +34,16 @@
 #include <ctime>
 
 #include "Device.h"
-#include "BufferUtils.cpp"
-#include "QueueFamilyIndices.cpp"
-#include "SwapChainSupportDetails.cpp"
-#include "UniformBufferObject.cpp"
-#include "Texture.cpp"
-#include "FileUtils.cpp"
-#include "CommandBufferUtils.cpp"
+#include "BufferUtils.h"
+#include "QueueFamilyIndices.h"
+#include "SwapChainSupportDetails.h"
+#include "UniformBufferObject.h"
+#include "Texture.h"
+#include "FileUtils.h"
+#include "CommandBufferUtils.h"
 
-#include "Object3D.cpp"
-#include "FirstPersonCamera.cpp"
+#include "Object3D.h"
+#include "FirstPersonCamera.h"
 
 #include "ChunkWorld.h"
 

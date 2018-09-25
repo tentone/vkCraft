@@ -12,7 +12,7 @@ void ChunkGeometry::generate(Chunk *chunk)
 {	
 	vertices.clear();
 	indices.clear();
-		
+
 	int size = 0;
 	glm::ivec3 start = chunk->index;
 	start *= Chunk::SIZE;

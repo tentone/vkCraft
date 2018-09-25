@@ -1,13 +1,8 @@
 #pragma once
 
-class QueueFamilyIndices
-{
-public:
-	int graphicsFamily = -1;
-	int presentFamily = -1;
+#include "QueueFamilyIndices.h"
 
-	bool isComplete()
-	{
-		return graphicsFamily >= 0 && presentFamily >= 0;
-	}
-};
+bool QueueFamilyIndices::isComplete()
+{
+	return graphicsFamily >= 0 && presentFamily >= 0;
+}

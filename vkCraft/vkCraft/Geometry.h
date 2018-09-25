@@ -4,7 +4,7 @@
 
 #include "Vertex.h"
 #include "Device.h"
-#include "BufferUtils.cpp"
+#include "BufferUtils.h"
 
 /**
  * Stores geometry data and correspondent buffers.
