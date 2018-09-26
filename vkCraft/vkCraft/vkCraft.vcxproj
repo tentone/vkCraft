@@ -31,6 +31,7 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UniformBufferObject.h" />
     <ClCompile Include="Vertex.cpp" />
+    <ClCompile Include="VkCraft.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BoxGeometry.h" />
@@ -50,6 +51,7 @@
     <ClInclude Include="QueueFamilyIndices.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VkCraft.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

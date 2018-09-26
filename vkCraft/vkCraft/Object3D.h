@@ -7,6 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
 
+/**
+ * Object 3D represents a drawable object that has a pose in the world.
+ */
 class Object3D
 {
 public:

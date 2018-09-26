@@ -88,6 +88,9 @@
     <ClCompile Include="SwapChainSupportDetails.h">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="VkCraft.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChunkWorld.h">
@@ -140,6 +143,9 @@
     </ClInclude>
     <ClInclude Include="PlaneGeometry.h">
       <Filter>Source Files\geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="VkCraft.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
