@@ -41,7 +41,7 @@ public:
 	const int CONCURRENT_FRAMES = 1;
 
 	//Validation layer control
-	const bool enableValidationLayers = true;
+	const bool ENABLE_VALIDATION_LAYERS = true;
 
 	//Vulkan context and window
 	GLFWwindow *window;
@@ -179,109 +179,182 @@ public:
 	 */
 	void createInstance();
 
-	//Setup debug callback
+	/**
+	 * Setup debug callback.
+	 */
 	void setupDebugCallback();
 
-	//Create a window surface using GLFW
+	/**
+	 * Create a window surface using GLFW.
+	 */
 	void createSurface();
 
-	//Choose a physical device
+	/**
+	 * Choose a appropiate physical device to be used.
+	 */
 	void pickPhysicalDevice();
 
-	//Create a logical device
+	/**
+	 * Create a logical device using the physical device selected.
+	 */
 	void createLogicalDevice();
 
+	/**
+	 * Create the swap chain for rendering.
+	 */
 	void createSwapChain();
 
-	//Create image views
+	/**
+	 * Create image views.
+	 */
 	void createImageViews();
 
-	//Create render pass (indicates where to read and write rendered data)
+	/** 
+	 * Create render pass (indicates where to read and write rendered data).
+	 */
 	void createRenderPass();
 
-	//Create descriptor set layout
+	/**
+	 * Create descriptor set layout.
+	 */
 	void createDescriptorSetLayout();
 
-	//Initializer graphics pipeline, load shaders, configure vertex format and rendering steps
+	/** 
+	 * Initializer graphics pipeline, load shaders, configure vertex format and rendering steps.
+	 */
 	void createGraphicsPipeline();
 
-	//Create frame buffers for the swap chain
+	/**
+	 * Create frame buffers for the swap chain.
+	 */
 	void createFramebuffers();
 
+	/**
+	 * Create a command pool to send commands to the GPU.
+	 */
 	void createCommandPool(VkCommandPool *commandPool);
 
-	//Create vertex buffer
+	/**
+	 * Create vertex buffer.
+	 */
 	void createGeometryBuffers(Geometry *geometry);
 
 	void createDescriptorPool();
 
 	void createDescriptorSet();
 
-	//Handle image layout transitions
+	/**
+	 * Handle image layout transitions
+	 */
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-	//Copy buffer to image helper (move to ImageUtils)
+	/**
+	 * Copy buffer to image helper (move to ImageUtils)
+	 */
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
-	//Create texture image (move to ImageUtils)
+	/**
+	 * Create texture image (move to ImageUtils)
+	 */
 	void createTextureImage(const char *fname);
 
-	//Create image view (generic) (move to ImageViewUtils maybe)
+	/**
+	 * Create image view (generic) (move to ImageViewUtils maybe)
+	 */
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
-	//Create vulkan image and allocate memory for it (move to ImageUtils)
+	/**
+	 * Create vulkan image and allocate memory for it (move to ImageUtils)
+	 */
 	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
-	//Depth buffer creation
+	/**
+	 * Depth buffer creation
+	 */
 	void createDepthResources();
 
-	//Check if the format for depth buffer has a stencil component
+	/**
+	 * Check if the format for depth buffer has a stencil component
+	 */
 	bool hasStencilComponent(VkFormat format);
 
-	//Get depth buffer format
+	/**
+	 * Get depth buffer format
+	 */
 	VkFormat findDepthFormat();
 
-	//Check formats supported by the device from a vector of candidates
+	/**
+	 * Check formats supported by the device from a vector of candidates
+	 */
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
-	//Create the actual draw command buffer
+	/**
+	 * Create the actual draw command buffer
+	 */
 	void createRenderingCommandBuffers();
 
-	//Create syncronization semaphores and fences
+	/**
+	 * Create syncronization semaphores and fences
+	 */
 	void createSyncObjects();
 
-	//Begin a single time use command buffer (Move to CommandBufferUtils)
+	/**
+	 * Begin a single time use command buffer (Move to CommandBufferUtils)
+	 */
 	VkCommandBuffer beginSingleTimeCommands();
 
-	//End single time command buffer (Move to CommandBufferUtils)
+	/**
+	 * End single time command buffer (Move to CommandBufferUtils)
+	 */
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-	//Create a shader from SPIR-V code
+
+	/**
+	 * Create a shader from SPIR-V code
+	 */
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 
-	//Check if a device has all the required capabilities (is a discrete GPU and supports geometry shading).
+	/**
+	 * Check if a device has all the required capabilities (is a discrete GPU and supports geometry shading).
+	 */
 	bool isPhysicalDeviceSuitable(VkPhysicalDevice physical);
 
-	//Check available device extensions
+	/**
+	 * Check available device extensions
+	 */
 	bool checkDeviceExtensionSupport(VkPhysicalDevice physical);
 
-	//Choose swap chain format (color depth)
+	/**
+	 * Choose swap chain format (color depth)
+	 */
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
-	//Chose swap chain presentation mode
+	/**
+	 * Chose swap chain presentation mode
+	 */
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 
-	//Choose resolution of the swap chain images (get it from the window size)
+	/**
+	 * Choose resolution of the swap chain images (get it from the window size)
+	 */
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-	//Check compatible swap chain support for our device
+	/**
+	 * Check compatible swap chain support for our device
+	 */
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice physical);
 
-	//Get required extensions if validation layers are active also add debug extension to the list
+	/**
+	 * Get required extensions if validation layers are active also add debug extension to the list
+	 */
 	std::vector<const char*> getRequiredExtensions();
 
-	//Check if validation layers are supported
+	/**
+	 * Check if validation layers are supported
+	 */
 	bool checkValidationLayerSupport();
 
-	//Debug callbacks
+	/**
+	 * Debug callbacks
+	 */
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData);
 };

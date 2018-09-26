@@ -333,7 +333,7 @@ void VkCraft::cleanup()
 
 	device.dispose();
 
-	if (enableValidationLayers)
+	if (ENABLE_VALIDATION_LAYERS)
 	{
 		DestroyDebugReportCallbackEXT(instance, callback, nullptr);
 	}
@@ -348,7 +348,7 @@ void VkCraft::cleanup()
 
 void VkCraft::createInstance()
 {
-	if (enableValidationLayers && !checkValidationLayerSupport())
+	if (ENABLE_VALIDATION_LAYERS && !checkValidationLayerSupport())
 	{
 		throw std::runtime_error("vkCraft: Validation layers requested are not available");
 	}
@@ -376,7 +376,7 @@ void VkCraft::createInstance()
 		fprintf(stdout, "\t%s\n", extensions[i]);
 	}
 
-	if (enableValidationLayers)
+	if (ENABLE_VALIDATION_LAYERS)
 	{
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -407,7 +407,7 @@ void VkCraft::createInstance()
 
 void VkCraft::setupDebugCallback()
 {
-	if (!enableValidationLayers)
+	if (!ENABLE_VALIDATION_LAYERS)
 	{
 		return;
 	}
@@ -503,7 +503,7 @@ void VkCraft::createLogicalDevice()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-	if (enableValidationLayers)
+	if (ENABLE_VALIDATION_LAYERS)
 	{
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -1501,7 +1501,7 @@ std::vector<const char*> VkCraft::getRequiredExtensions()
 
 	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	if (enableValidationLayers)
+	if (ENABLE_VALIDATION_LAYERS)
 	{
 		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 	}
