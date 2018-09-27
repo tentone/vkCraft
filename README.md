@@ -31,6 +31,10 @@ L ---- N ---- R
     F  |
        D
 
+## To do
+ - Fix node references on creation.
+ - Generate only the required faces relative to the world.
+
 ## References
  - Mike Bailey's Vulkan Guide (http://web.engr.oregonstate.edu/~mjb/vulkan/)
  - Alexander Overvoorde Vulkan Guide (https://vulkan-tutorial.com/Introduction)
