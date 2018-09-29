@@ -67,7 +67,7 @@ void VkCraft::update()
 	if (index != cameraIndex)
 	{
 		double t = glfwGetTime();
-		int distance = 2;
+		int distance = 0;
 
 		std::vector<Geometry*> geometries = world.getGeometries(camera.position, distance);
 

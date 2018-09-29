@@ -137,18 +137,18 @@ void ChunkNode::fetchNeighborPath(std::array<int, 3> path, int position)
 		}
 		else
 		{
-			std::cout << "VkCraft: fetchNeighborPath " << position << " already has a node stored." << std::endl;
+			//std::cout << "VkCraft: fetchNeighborPath " << position << " already has a node stored." << std::endl;
 		}
 	}
 }
 
 ChunkNode* ChunkNode::getNeighborPath(std::array<int, 3> path)
 {
-	std::cout << "VkCraft: Path size is " << path.size() << "." << std::endl;
+	//std::cout << "VkCraft: Path size is " << path.size() << "." << std::endl;
 
 	if (path.size() < 1 || neighbors[path[0]] == nullptr)
 	{
-		std::cout << "VkCraft: First node still does not exist." << std::endl;
+		//std::cout << "VkCraft: First node still does not exist." << std::endl;
 		return nullptr;
 	}
 

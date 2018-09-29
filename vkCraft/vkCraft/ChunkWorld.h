@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <math.h>
 
 #include "Device.h"
 #include "Geometry.h"

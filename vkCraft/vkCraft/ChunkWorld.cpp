@@ -9,11 +9,16 @@ ChunkWorld::ChunkWorld(int _seed)
 	root = new ChunkNode(glm::ivec3(0, 0, 0), seed);
 	current = root;
 }
-	
 
 glm::ivec3 ChunkWorld::getIndex(glm::vec3 position)
 {
-	return { position.x / Chunk::SIZE, position.y / Chunk::SIZE , position.z / Chunk::SIZE };
+	int x = position.x >= 0 ? position.x / Chunk::SIZE : position.x / Chunk::SIZE - 1;
+	int y = position.y >= 0 ? position.y / Chunk::SIZE : position.y / Chunk::SIZE - 1;
+	int z = position.z >= 0 ? position.z / Chunk::SIZE : position.z / Chunk::SIZE - 1;
+
+	//std::cout << "VkCraft: Position (" << position.x << ", " << position.y << ", " << position.z << ") to index (" << x << ", " << y << ", " << z << ")." << std::endl;
+
+	return { x, y, z };
 }
 
 std::vector<Geometry*> ChunkWorld::getGeometries(glm::vec3 position, int distance)
