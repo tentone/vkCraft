@@ -89,6 +89,27 @@ public:
 	void generateNeighbors(int recursive = 0);
 
 	/**
+	 * Search neighbors connections using already known relations, should be called before generating neighbors locally.
+	 *
+	 * Only searches second order relations, should be enought to avoid repetitions.
+	 */
+	void searchNeighbors();
+
+	/**
+	 * Get element from path if it is reachable.
+	 *
+	 * Path is described a directional jumps in a array.
+	 */
+	ChunkNode* getNeighborPath(int path[], int length);
+
+	/**
+	 * Get a neightbor from a path and store it in a node relation.
+	 *
+	 * Usefull to simplify node fetching code.
+	 */
+	void fetchNeighborPath(int path[], int length, int position);
+
+	/**
 	* Generate data for this node.
 	*/
 	void generateData();
