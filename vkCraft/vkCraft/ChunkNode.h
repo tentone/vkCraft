@@ -84,7 +84,9 @@ public:
 	void getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *world, int recursive = 0);
 
 	/**
-	 * Generate neighbors for a node.
+	 * Generate neighbors of this node and assign direct relations between nodes.
+	 *
+	 * Before creating the nodes it searches for already known nodes.
 	 */
 	void generateNeighbors(int recursive = 0);
 
@@ -100,14 +102,14 @@ public:
 	 *
 	 * Path is described a directional jumps in a array.
 	 */
-	ChunkNode* getNeighborPath(int path[], int length);
+	ChunkNode* getNeighborPath(std::array<int, 3> path);
 
 	/**
 	 * Get a neightbor from a path and store it in a node relation.
 	 *
 	 * Usefull to simplify node fetching code.
 	 */
-	void fetchNeighborPath(int path[], int length, int position);
+	void fetchNeighborPath(std::array<int, 3> path, int position);
 
 	/**
 	* Generate data for this node.
