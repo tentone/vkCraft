@@ -99,11 +99,13 @@ void ChunkNode::searchNeighbors()
 	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::UP, ChunkNode::LEFT }, ChunkNode::UP);
 	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::DOWN, ChunkNode::LEFT }, ChunkNode::DOWN);
 
+	
 	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::FRONT, ChunkNode::RIGHT }, ChunkNode::FRONT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::BACK, ChunkNode::RIGHT }, ChunkNode::BACK);
 	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::UP, ChunkNode::RIGHT }, ChunkNode::UP);
 	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::DOWN, ChunkNode::RIGHT }, ChunkNode::DOWN);
 
+	/*
 	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::LEFT, ChunkNode::BACK }, ChunkNode::LEFT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::RIGHT, ChunkNode::BACK }, ChunkNode::RIGHT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::UP, ChunkNode::BACK }, ChunkNode::UP);
@@ -123,23 +125,25 @@ void ChunkNode::searchNeighbors()
 	ChunkNode::fetchNeighborPath({ ChunkNode::DOWN, ChunkNode::RIGHT, ChunkNode::UP }, ChunkNode::RIGHT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::DOWN, ChunkNode::FRONT, ChunkNode::UP }, ChunkNode::FRONT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::DOWN, ChunkNode::BACK, ChunkNode::UP }, ChunkNode::BACK);
+	*/
 }
 
 void ChunkNode::fetchNeighborPath(std::array<int, 3> path, int position)
 {
-	ChunkNode *node = getNeighborPath(path);
-
-	if (node != nullptr)
+	if (neighbors[position] == nullptr)
 	{
-		if (neighbors[position] == nullptr)
+		ChunkNode *node = getNeighborPath(path);
+
+		if (node != nullptr)
 		{
 			neighbors[position] = node;
 		}
-		else
-		{
-			//std::cout << "VkCraft: fetchNeighborPath " << position << " already has a node stored." << std::endl;
-		}
 	}
+	else
+	{
+		//std::cout << "VkCraft: fetchNeighborPath " << position << " already has a node stored." << std::endl;
+	}
+
 }
 
 ChunkNode* ChunkNode::getNeighborPath(std::array<int, 3> path)

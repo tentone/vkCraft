@@ -67,7 +67,7 @@ void VkCraft::update()
 	if (index != cameraIndex)
 	{
 		double t = glfwGetTime();
-		int distance = 0;
+		int distance = 3;
 
 		std::vector<Geometry*> geometries = world.getGeometries(camera.position, distance);
 
@@ -1266,15 +1266,12 @@ void VkCraft::createRenderingCommandBuffers()
 		vkCmdBindPipeline(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
 		VkDeviceSize offsets[] = { 0 };
-		
-		int count = 0;
 
 		//Chunk geometry
 		for (int j = 0; j < world.geometries.size(); j++)
 		{
 			if (world.geometries[j]->hasBuffers())
 			{
-				count++;
 				vkCmdBindDescriptorSets(renderCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 				vkCmdBindVertexBuffers(renderCommandBuffers[i], 0, 1, &(world.geometries[j]->vertexBuffer), offsets);
 				vkCmdBindIndexBuffer(renderCommandBuffers[i], world.geometries[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
@@ -1282,8 +1279,6 @@ void VkCraft::createRenderingCommandBuffers()
 			}
 		}
 		
-		std::cout << "VkCraft: Will be drawing " << count << " geometries." << std::endl;
-
 		//End rendering
 		vkCmdEndRenderPass(renderCommandBuffers[i]);
 

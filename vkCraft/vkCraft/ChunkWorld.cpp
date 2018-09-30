@@ -12,9 +12,9 @@ ChunkWorld::ChunkWorld(int _seed)
 
 glm::ivec3 ChunkWorld::getIndex(glm::vec3 position)
 {
-	int x = position.x >= 0 ? position.x / Chunk::SIZE : position.x / Chunk::SIZE - 1;
-	int y = position.y >= 0 ? position.y / Chunk::SIZE : position.y / Chunk::SIZE - 1;
-	int z = position.z >= 0 ? position.z / Chunk::SIZE : position.z / Chunk::SIZE - 1;
+	int x = position.x >= 0 ? (position.x / Chunk::SIZE) : (position.x / Chunk::SIZE - 1);
+	int y = position.y >= 0 ? (position.y / Chunk::SIZE) : (position.y / Chunk::SIZE - 1);
+	int z = position.z >= 0 ? (position.z / Chunk::SIZE) : (position.z / Chunk::SIZE - 1);
 
 	//std::cout << "VkCraft: Position (" << position.x << ", " << position.y << ", " << position.z << ") to index (" << x << ", " << y << ", " << z << ")." << std::endl;
 
