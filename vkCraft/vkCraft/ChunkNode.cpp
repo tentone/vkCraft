@@ -92,20 +92,113 @@ void ChunkNode::generateNeighbors(int recursive)
 	}
 }
 
+ChunkNode* ChunkNode::searchNode(glm::ivec3 index, std::vector<ChunkNode*> *nodes)
+{
+	if (std::find(nodes->begin(), nodes->end(), this) != nodes->end())
+	{
+		return nullptr;
+	}
+
+	nodes->push_back(this);
+
+	for (unsigned int i = 0; i < 6; i++)
+	{
+		if (neighbors[i] != nullptr && neighbors[i]->index == index)
+		{
+			return neighbors[i];
+		}
+	}
+
+	for (unsigned int i = 0; i < 6; i++)
+	{
+		if (neighbors[i] != nullptr)
+		{
+			ChunkNode* node = neighbors[i]->searchNode(index, nodes);
+			if (node != nullptr)
+			{
+				return node;
+			}
+		}
+	}
+	
+	return nullptr;
+}
+
 void ChunkNode::searchNeighbors()
 {
+	std::vector<ChunkNode*> *nodes = new std::vector<ChunkNode*>();
+
+	if (neighbors[ChunkNode::LEFT] == nullptr)
+	{
+		ChunkNode* left = searchNode({index.x - 1, index.y, index.z}, nodes);
+		if (left != nullptr)
+		{
+			neighbors[ChunkNode::LEFT] = left;
+		}	 
+	}
+
+	if (neighbors[ChunkNode::RIGHT] == nullptr)
+	{
+		nodes->clear();
+		ChunkNode* right = searchNode({ index.x + 1, index.y, index.z }, nodes);
+		if (right != nullptr)
+		{
+			neighbors[ChunkNode::RIGHT] = right;
+		}
+	}
+
+	if (neighbors[ChunkNode::FRONT] == nullptr)
+	{
+		nodes->clear();
+		ChunkNode* front = searchNode({ index.x, index.y, index.z - 1}, nodes);
+		if (front != nullptr)
+		{
+			neighbors[ChunkNode::FRONT] = front;
+		}
+	}
+	if (neighbors[ChunkNode::BACK] == nullptr)
+	{
+		nodes->clear();
+		ChunkNode* back = searchNode({ index.x, index.y, index.z + 1}, nodes);
+		if (back != nullptr)
+		{
+			neighbors[ChunkNode::BACK] = back;
+		}
+	}
+
+	if (neighbors[ChunkNode::UP] == nullptr)
+	{
+		nodes->clear();
+		ChunkNode* up = searchNode({ index.x, index.y + 1, index.z }, nodes);
+		if (up != nullptr)
+		{
+			neighbors[ChunkNode::UP] = up;
+		}
+	}
+
+	if (neighbors[ChunkNode::DOWN] == nullptr)
+	{
+		nodes->clear();
+		ChunkNode* down = searchNode({ index.x, index.y - 1, index.z }, nodes);
+		if (down != nullptr)
+		{
+			neighbors[ChunkNode::DOWN] = down;
+		}
+	}
+	
+	delete nodes;
+
+	/*
 	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::FRONT, ChunkNode::LEFT }, ChunkNode::FRONT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::BACK, ChunkNode::LEFT }, ChunkNode::BACK);
 	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::UP, ChunkNode::LEFT }, ChunkNode::UP);
 	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::DOWN, ChunkNode::LEFT }, ChunkNode::DOWN);
 
-	
 	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::FRONT, ChunkNode::RIGHT }, ChunkNode::FRONT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::BACK, ChunkNode::RIGHT }, ChunkNode::BACK);
 	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::UP, ChunkNode::RIGHT }, ChunkNode::UP);
 	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::DOWN, ChunkNode::RIGHT }, ChunkNode::DOWN);
 
-	/*
 	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::LEFT, ChunkNode::BACK }, ChunkNode::LEFT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::RIGHT, ChunkNode::BACK }, ChunkNode::RIGHT);
 	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::UP, ChunkNode::BACK }, ChunkNode::UP);

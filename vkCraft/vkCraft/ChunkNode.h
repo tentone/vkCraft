@@ -38,6 +38,19 @@ public:
 	static const int BACK = 3;
 	static const int UP = 4;
 	static const int DOWN = 5;
+	
+	/**
+	 * The world offset per block for each possible direction.
+	 */
+	/*static const glm::vec3 DIRECTION[6] =
+	{
+		{-1.0, 0.0, 0.0},
+		{1.0, 0.0, 0.0},
+		{0.0, 0.0, -1.0},
+		{0.0, 0.0, 1.0},
+		{0.0, 1.0, 0.0},
+		{0.0, -1.0, 0.0}
+	};*/
 
 	/**
 	 * Chunk data.
@@ -89,6 +102,11 @@ public:
 	 * Before creating the nodes it searches for already known nodes.
 	 */
 	void generateNeighbors(int recursive = 0);
+
+	/**
+	 * Try to get node from its index, recursively.
+	 */
+	ChunkNode* searchNode(glm::ivec3 index, std::vector<ChunkNode*> *nodes);
 
 	/**
 	 * Search neighbors connections using already known relations, should be called before generating neighbors locally.
