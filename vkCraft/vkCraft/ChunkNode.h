@@ -120,14 +120,7 @@ public:
 	 *
 	 * Path is described a directional jumps in a array.
 	 */
-	ChunkNode* getNeighborPath(std::array<int, 3> path);
-
-	/**
-	 * Get a neightbor from a path and store it in a node relation.
-	 *
-	 * Usefull to simplify node fetching code.
-	 */
-	void fetchNeighborPath(std::array<int, 3> path, int position);
+	ChunkNode* getNeighborPath(int path[], int size);
 
 	/**
 	* Generate data for this node.

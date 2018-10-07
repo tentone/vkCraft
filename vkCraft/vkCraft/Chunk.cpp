@@ -68,7 +68,7 @@ int Chunk::getHeight(int x, int y, int seed, double zoomget)
 		noise += getNoise(((double)x) * frequency / zoom, ((double)y) / zoom * frequency, seed) * amplitude;
 	}
 
-	double maxHeight = SIZE * 4.0;
+	double maxHeight = 32 * 4.0;
 	double minHeight = 0.0;
 
 	return (int)(((noise + 1) / 2.0) * (maxHeight - minHeight));

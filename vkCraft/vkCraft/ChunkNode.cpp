@@ -13,7 +13,6 @@ ChunkNode::ChunkNode(glm::ivec3 _index, int _seed)
 
 void ChunkNode::getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *world, int recursive)
 {
-	//Generate geometry if necessary
 	if(state < GEOMETRY)
 	{
 		generateGeometry(world);
@@ -42,19 +41,37 @@ void ChunkNode::getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *wo
 
 void ChunkNode::generateNeighbors(int recursive)
 {
-	searchNeighbors();
-
 	//X - 1 Left
 	if (neighbors[ChunkNode::LEFT] == nullptr)
 	{
-		neighbors[ChunkNode::LEFT] = new ChunkNode(glm::ivec3(index.x - 1, index.y, index.z), seed);
-		neighbors[ChunkNode::LEFT]->neighbors[ChunkNode::RIGHT] = this;
+		/*std::vector<ChunkNode*> *nodes = new std::vector<ChunkNode*>();
+		ChunkNode* left = searchNode({ index.x - 1, index.y, index.z }, nodes);
+		if (left != nullptr)
+		{
+			neighbors[ChunkNode::LEFT] = left;
+		}
+		else
+		{*/
+			neighbors[ChunkNode::LEFT] = new ChunkNode(glm::ivec3(index.x - 1, index.y, index.z), seed);
+			neighbors[ChunkNode::LEFT]->neighbors[ChunkNode::RIGHT] = this;
+		//}
+		//delete nodes;
 	}
 	//X + 1 Right
 	if (neighbors[ChunkNode::RIGHT] == nullptr)
 	{
-		neighbors[ChunkNode::RIGHT] = new ChunkNode(glm::ivec3(index.x + 1, index.y, index.z), seed);
-		neighbors[ChunkNode::RIGHT]->neighbors[ChunkNode::LEFT] = this;
+		/*std::vector<ChunkNode*> *nodes = new std::vector<ChunkNode*>();
+		ChunkNode* right = searchNode({ index.x + 1, index.y, index.z }, nodes);
+		if (right != nullptr)
+		{
+			neighbors[ChunkNode::RIGHT] = right;
+		}
+		else
+		{*/
+			neighbors[ChunkNode::RIGHT] = new ChunkNode(glm::ivec3(index.x + 1, index.y, index.z), seed);
+			neighbors[ChunkNode::RIGHT]->neighbors[ChunkNode::LEFT] = this;
+		//}
+		//delete nodes;
 	}
 
 	//Y + 1 Up
@@ -90,38 +107,6 @@ void ChunkNode::generateNeighbors(int recursive)
 			neighbors[i]->generateNeighbors(recursive - 1);
 		}
 	}
-}
-
-ChunkNode* ChunkNode::searchNode(glm::ivec3 index, std::vector<ChunkNode*> *nodes)
-{
-	if (std::find(nodes->begin(), nodes->end(), this) != nodes->end())
-	{
-		return nullptr;
-	}
-
-	nodes->push_back(this);
-
-	for (unsigned int i = 0; i < 6; i++)
-	{
-		if (neighbors[i] != nullptr && neighbors[i]->index == index)
-		{
-			return neighbors[i];
-		}
-	}
-
-	for (unsigned int i = 0; i < 6; i++)
-	{
-		if (neighbors[i] != nullptr)
-		{
-			ChunkNode* node = neighbors[i]->searchNode(index, nodes);
-			if (node != nullptr)
-			{
-				return node;
-			}
-		}
-	}
-	
-	return nullptr;
 }
 
 void ChunkNode::searchNeighbors()
@@ -187,71 +172,50 @@ void ChunkNode::searchNeighbors()
 	}
 	
 	delete nodes;
-
-	/*
-	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::FRONT, ChunkNode::LEFT }, ChunkNode::FRONT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::BACK, ChunkNode::LEFT }, ChunkNode::BACK);
-	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::UP, ChunkNode::LEFT }, ChunkNode::UP);
-	ChunkNode::fetchNeighborPath({ ChunkNode::RIGHT, ChunkNode::DOWN, ChunkNode::LEFT }, ChunkNode::DOWN);
-
-	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::FRONT, ChunkNode::RIGHT }, ChunkNode::FRONT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::BACK, ChunkNode::RIGHT }, ChunkNode::BACK);
-	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::UP, ChunkNode::RIGHT }, ChunkNode::UP);
-	ChunkNode::fetchNeighborPath({ ChunkNode::LEFT, ChunkNode::DOWN, ChunkNode::RIGHT }, ChunkNode::DOWN);
-
-	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::LEFT, ChunkNode::BACK }, ChunkNode::LEFT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::RIGHT, ChunkNode::BACK }, ChunkNode::RIGHT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::UP, ChunkNode::BACK }, ChunkNode::UP);
-	ChunkNode::fetchNeighborPath({ ChunkNode::FRONT, ChunkNode::DOWN, ChunkNode::BACK }, ChunkNode::DOWN);
-
-	ChunkNode::fetchNeighborPath({ ChunkNode::BACK, ChunkNode::LEFT, ChunkNode::FRONT }, ChunkNode::LEFT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::BACK, ChunkNode::RIGHT, ChunkNode::FRONT }, ChunkNode::RIGHT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::BACK, ChunkNode::UP, ChunkNode::FRONT }, ChunkNode::UP);
-	ChunkNode::fetchNeighborPath({ ChunkNode::BACK, ChunkNode::DOWN, ChunkNode::FRONT }, ChunkNode::DOWN);
-
-	ChunkNode::fetchNeighborPath({ ChunkNode::UP, ChunkNode::LEFT, ChunkNode::DOWN }, ChunkNode::LEFT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::UP, ChunkNode::RIGHT, ChunkNode::DOWN }, ChunkNode::RIGHT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::UP, ChunkNode::FRONT, ChunkNode::DOWN }, ChunkNode::FRONT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::UP, ChunkNode::BACK, ChunkNode::DOWN }, ChunkNode::BACK);
-
-	ChunkNode::fetchNeighborPath({ ChunkNode::DOWN, ChunkNode::LEFT, ChunkNode::UP }, ChunkNode::LEFT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::DOWN, ChunkNode::RIGHT, ChunkNode::UP }, ChunkNode::RIGHT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::DOWN, ChunkNode::FRONT, ChunkNode::UP }, ChunkNode::FRONT);
-	ChunkNode::fetchNeighborPath({ ChunkNode::DOWN, ChunkNode::BACK, ChunkNode::UP }, ChunkNode::BACK);
-	*/
 }
 
-void ChunkNode::fetchNeighborPath(std::array<int, 3> path, int position)
+ChunkNode* ChunkNode::searchNode(glm::ivec3 index, std::vector<ChunkNode*> *nodes)
 {
-	if (neighbors[position] == nullptr)
+	if (std::find(nodes->begin(), nodes->end(), this) != nodes->end())
 	{
-		ChunkNode *node = getNeighborPath(path);
+		return nullptr;
+	}
 
-		if (node != nullptr)
+	nodes->push_back(this);
+
+	for (unsigned int i = 0; i < 6; i++)
+	{
+		if (neighbors[i] != nullptr && neighbors[i]->index == index)
 		{
-			neighbors[position] = node;
+			return neighbors[i];
 		}
 	}
-	else
+
+	for (unsigned int i = 0; i < 6; i++)
 	{
-		//std::cout << "VkCraft: fetchNeighborPath " << position << " already has a node stored." << std::endl;
+		if (neighbors[i] != nullptr)
+		{
+			ChunkNode* node = neighbors[i]->searchNode(index, nodes);
+			if (node != nullptr)
+			{
+				return node;
+			}
+		}
 	}
 
+	return nullptr;
 }
 
-ChunkNode* ChunkNode::getNeighborPath(std::array<int, 3> path)
+ChunkNode* ChunkNode::getNeighborPath(int path[], int size)
 {
-	//std::cout << "VkCraft: Path size is " << path.size() << "." << std::endl;
-
-	if (path.size() < 1 || neighbors[path[0]] == nullptr)
+	if (size < 1 || neighbors[path[0]] == nullptr)
 	{
-		//std::cout << "VkCraft: First node still does not exist." << std::endl;
 		return nullptr;
 	}
 
 	ChunkNode* node = neighbors[path[0]];
 
-	for (int i = 1; i < path.size(); i++)
+	for (int i = 1; i < size; i++)
 	{
 		if (node->neighbors[path[i]] != nullptr)
 		{
@@ -262,13 +226,6 @@ ChunkNode* ChunkNode::getNeighborPath(std::array<int, 3> path)
 			return nullptr;
 		}
 	}
-
-	std::cout << "VkCraft: Found node ";
-	for (int i = 0; i < path.size(); i++)
-	{
-		std::cout << path[i] << ", ";
-	}
-	std::cout << std::endl;
 
 	return node;
 }
