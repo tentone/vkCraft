@@ -42,7 +42,7 @@ public:
 	/**
 	 * The world offset per block for each possible direction.
 	 */
-	/*static const glm::vec3 DIRECTION[6] =
+	/*const glm::vec3 DIRECTION[6] =
 	{
 		{-1.0, 0.0, 0.0},
 		{1.0, 0.0, 0.0},
@@ -94,6 +94,11 @@ public:
 	/**
 	 * Get geometries from this node and its neighboors recursively.
 	 */
+	void getNodes(std::vector<ChunkNode*> *nodes, int recursive = 0);
+
+	/**
+	 * Get geometries from this node and its neighboors recursively.
+	 */
 	void getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *world, int recursive = 0);
 
 	/**
@@ -129,11 +134,20 @@ public:
 
 	/**
 	 * Generate geometry for this node.
+	 *
+	 * If it still has no chunk data has generate it.
 	 */
 	void generateGeometry(ChunkWorld *world);
 
 	/**
+	 * Get geometry of this node.
+	 */
+	Geometry* getGeometry(ChunkWorld *world);
+
+	/**
 	 * Dispose all the geometries attached to this node recursively.
+	 *
+	 * Checks if the geometry has vulkan buffers and also disposes them.
 	 */
 	void dispose(VkDevice &device);
 };

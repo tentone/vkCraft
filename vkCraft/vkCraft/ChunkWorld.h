@@ -31,11 +31,18 @@ public:
 	int seed;
 
 	/**
-	* Vector of geometries visible for this world.
-	*
-	* The geometries are updated using the updateGeometries() method.
-	*/
+	 * Vector of geometries visible for this world.
+	 *
+	 * The geometries are updated using the getGeometries method.
+	 */
 	std::vector<Geometry*> geometries;
+
+	/**
+	 * Vector of nodes visible for this world.
+	 *
+	 * The nodes are updated using the getGeometries method.
+	 */
+	std::vector<ChunkNode*> nodes;
 
 	/**
 	 * Chunk world constructor creates the root chunk.

@@ -16,29 +16,30 @@ glm::ivec3 ChunkWorld::getIndex(glm::vec3 position)
 	int y = position.y >= 0 ? (position.y / Chunk::SIZE) : (position.y / Chunk::SIZE - 1);
 	int z = position.z >= 0 ? (position.z / Chunk::SIZE) : (position.z / Chunk::SIZE - 1);
 
-	//std::cout << "VkCraft: Position (" << position.x << ", " << position.y << ", " << position.z << ") to index (" << x << ", " << y << ", " << z << ")." << std::endl;
-
 	return { x, y, z };
 }
 
 std::vector<Geometry*> ChunkWorld::getGeometries(glm::vec3 position, int distance)
 {
 	glm::ivec3 index = getIndex(position);
-	geometries.clear();
 
 	ChunkNode *node = getChunkNode(index);
-	node->getGeometries(&geometries, this, distance);
+	
+	nodes.clear();
+	node->getNodes(&nodes, distance);
+
+	geometries.clear();
+	for (unsigned int i = 0; i < nodes.size(); i++)
+	{
+		geometries.push_back(nodes[i]->getGeometry(this));
+	}
 
 	return geometries;
 }
 
 ChunkNode* ChunkWorld::getChunkNode(glm::ivec3 index)
 {
-	//std::cout << "vkCraft: Requested chunk: " << index.x << ", " << index.y << ", " << index.z << std::endl;
-
 	glm::ivec3 offset = current->index - index;
-
-	//std::cout << "vkCraft: Chunk offset: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
 
 	//X
 	if (offset.x > 0)
@@ -117,8 +118,6 @@ ChunkNode* ChunkWorld::getChunkNode(glm::ivec3 index)
 			current = current->neighbors[ChunkNode::BACK];
 		}
 	}
-
-	//std::cout << "vkCraft: Obtained chunk: " << current->index.x << ", " << current->index.y << ", " << current->index.z << std::endl;
 
 	return current;
 }

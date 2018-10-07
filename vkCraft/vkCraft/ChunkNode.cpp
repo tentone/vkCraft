@@ -11,6 +11,44 @@ ChunkNode::ChunkNode(glm::ivec3 _index, int _seed)
 	generateData();
 }
 
+void ChunkNode::getNodes(std::vector<ChunkNode*> *nodes, int recursive)
+{
+	bool found = false;
+	for (unsigned int i = 0; i < nodes->size(); i++)
+	{
+		if ((*nodes)[i]->index == index)
+		{
+			found = true;
+			break;
+		}
+	}
+	
+	if (found == false)
+	{
+		nodes->push_back(this);
+	}
+
+	if (recursive > 0)
+	{
+		generateNeighbors();
+
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			neighbors[i]->getNodes(nodes, recursive - 1);
+		}
+	}
+}
+
+Geometry* ChunkNode::getGeometry(ChunkWorld *world)
+{
+	if (state < GEOMETRY)
+	{
+		generateGeometry(world);
+	}
+
+	return geometry;
+}
+
 void ChunkNode::getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *world, int recursive)
 {
 	if(state < GEOMETRY)
@@ -41,37 +79,19 @@ void ChunkNode::getGeometries(std::vector<Geometry*> *geometries, ChunkWorld *wo
 
 void ChunkNode::generateNeighbors(int recursive)
 {
+	searchNeighbors();
+
 	//X - 1 Left
 	if (neighbors[ChunkNode::LEFT] == nullptr)
 	{
-		/*std::vector<ChunkNode*> *nodes = new std::vector<ChunkNode*>();
-		ChunkNode* left = searchNode({ index.x - 1, index.y, index.z }, nodes);
-		if (left != nullptr)
-		{
-			neighbors[ChunkNode::LEFT] = left;
-		}
-		else
-		{*/
-			neighbors[ChunkNode::LEFT] = new ChunkNode(glm::ivec3(index.x - 1, index.y, index.z), seed);
-			neighbors[ChunkNode::LEFT]->neighbors[ChunkNode::RIGHT] = this;
-		//}
-		//delete nodes;
+		neighbors[ChunkNode::LEFT] = new ChunkNode(glm::ivec3(index.x - 1, index.y, index.z), seed);
+		neighbors[ChunkNode::LEFT]->neighbors[ChunkNode::RIGHT] = this;
 	}
 	//X + 1 Right
 	if (neighbors[ChunkNode::RIGHT] == nullptr)
 	{
-		/*std::vector<ChunkNode*> *nodes = new std::vector<ChunkNode*>();
-		ChunkNode* right = searchNode({ index.x + 1, index.y, index.z }, nodes);
-		if (right != nullptr)
-		{
-			neighbors[ChunkNode::RIGHT] = right;
-		}
-		else
-		{*/
-			neighbors[ChunkNode::RIGHT] = new ChunkNode(glm::ivec3(index.x + 1, index.y, index.z), seed);
-			neighbors[ChunkNode::RIGHT]->neighbors[ChunkNode::LEFT] = this;
-		//}
-		//delete nodes;
+		neighbors[ChunkNode::RIGHT] = new ChunkNode(glm::ivec3(index.x + 1, index.y, index.z), seed);
+		neighbors[ChunkNode::RIGHT]->neighbors[ChunkNode::LEFT] = this;
 	}
 
 	//Y + 1 Up
@@ -238,7 +258,6 @@ void ChunkNode::generateData()
 
 void ChunkNode::generateGeometry(ChunkWorld *world)
 {
-	//If it still has no chunk data generate it
 	if (state < DATA)
 	{
 		generateData();
@@ -250,14 +269,12 @@ void ChunkNode::generateGeometry(ChunkWorld *world)
 
 void ChunkNode::dispose(VkDevice &device)
 {
-	//Check if the geometry has buffers
 	if (state > DATA)
 	{
 		geometry->dispose(device);
 		state = DATA;
 	}
-		
-	//Dipose neighboors
+
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		if(neighbors[i] != nullptr && neighbors[i]->state > DATA)
