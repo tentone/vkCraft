@@ -68,7 +68,7 @@ void VkCraft::update()
 	{
 		double t = glfwGetTime();
 
-		int distance = 6;
+		int distance = 5;
 		std::vector<Geometry*> geometries = world.getGeometries(camera.position, distance);
 
 		for (int i = 0; i < geometries.size(); i++)

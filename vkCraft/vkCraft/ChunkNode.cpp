@@ -131,21 +131,22 @@ void ChunkNode::generateNeighbors(int recursive)
 
 void ChunkNode::searchNeighbors()
 {
-	std::vector<ChunkNode*> *nodes = new std::vector<ChunkNode*>();
+	std::vector<ChunkNode*> nodes = std::vector<ChunkNode*>();
 
 	if (neighbors[ChunkNode::LEFT] == nullptr)
 	{
-		ChunkNode* left = searchNode({index.x - 1, index.y, index.z}, nodes);
+		nodes.clear();
+		ChunkNode* left = searchNode({index.x - 1, index.y, index.z}, &nodes);
 		if (left != nullptr)
 		{
 			neighbors[ChunkNode::LEFT] = left;
-		}	 
+		}
 	}
-
+	
 	if (neighbors[ChunkNode::RIGHT] == nullptr)
 	{
-		nodes->clear();
-		ChunkNode* right = searchNode({ index.x + 1, index.y, index.z }, nodes);
+		nodes.clear();
+		ChunkNode* right = searchNode({ index.x + 1, index.y, index.z }, &nodes);
 		if (right != nullptr)
 		{
 			neighbors[ChunkNode::RIGHT] = right;
@@ -154,8 +155,8 @@ void ChunkNode::searchNeighbors()
 
 	if (neighbors[ChunkNode::FRONT] == nullptr)
 	{
-		nodes->clear();
-		ChunkNode* front = searchNode({ index.x, index.y, index.z - 1}, nodes);
+		nodes.clear();
+		ChunkNode* front = searchNode({ index.x, index.y, index.z - 1}, &nodes);
 		if (front != nullptr)
 		{
 			neighbors[ChunkNode::FRONT] = front;
@@ -163,8 +164,8 @@ void ChunkNode::searchNeighbors()
 	}
 	if (neighbors[ChunkNode::BACK] == nullptr)
 	{
-		nodes->clear();
-		ChunkNode* back = searchNode({ index.x, index.y, index.z + 1}, nodes);
+		nodes.clear();
+		ChunkNode* back = searchNode({ index.x, index.y, index.z + 1}, &nodes);
 		if (back != nullptr)
 		{
 			neighbors[ChunkNode::BACK] = back;
@@ -173,8 +174,8 @@ void ChunkNode::searchNeighbors()
 
 	if (neighbors[ChunkNode::UP] == nullptr)
 	{
-		nodes->clear();
-		ChunkNode* up = searchNode({ index.x, index.y + 1, index.z }, nodes);
+		nodes.clear();
+		ChunkNode* up = searchNode({ index.x, index.y + 1, index.z }, &nodes);
 		if (up != nullptr)
 		{
 			neighbors[ChunkNode::UP] = up;
@@ -183,15 +184,14 @@ void ChunkNode::searchNeighbors()
 
 	if (neighbors[ChunkNode::DOWN] == nullptr)
 	{
-		nodes->clear();
-		ChunkNode* down = searchNode({ index.x, index.y - 1, index.z }, nodes);
+		nodes.clear();
+		ChunkNode* down = searchNode({ index.x, index.y - 1, index.z }, &nodes);
 		if (down != nullptr)
 		{
 			neighbors[ChunkNode::DOWN] = down;
 		}
 	}
 	
-	delete nodes;
 }
 
 ChunkNode* ChunkNode::searchNode(glm::ivec3 index, std::vector<ChunkNode*> *nodes)
@@ -202,7 +202,8 @@ ChunkNode* ChunkNode::searchNode(glm::ivec3 index, std::vector<ChunkNode*> *node
 	}
 
 	nodes->push_back(this);
-
+	
+	//Check if it is one of its neighbors
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		if (neighbors[i] != nullptr && neighbors[i]->index == index)
@@ -211,6 +212,7 @@ ChunkNode* ChunkNode::searchNode(glm::ivec3 index, std::vector<ChunkNode*> *node
 		}
 	}
 
+	//Recursively search neighbors
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		if (neighbors[i] != nullptr)
