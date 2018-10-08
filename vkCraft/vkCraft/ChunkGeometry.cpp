@@ -15,8 +15,7 @@ void ChunkGeometry::generate(Chunk *chunk, ChunkWorld *world)
 
 	int size = 0;
 
-	glm::ivec3 start = chunk->index;
-	start *= Chunk::SIZE;
+	glm::ivec3 start = { chunk->index.x * Chunk::SIZE, chunk->index.y * Chunk::SIZE , chunk->index.z * Chunk::SIZE };
 
 	for (int x = 0; x < Chunk::SIZE; x++)
 	{
