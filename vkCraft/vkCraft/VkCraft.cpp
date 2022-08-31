@@ -704,7 +704,11 @@ void VkCraft::createGraphicsPipeline()
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
 	VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
-	std::array<VkVertexInputAttributeDescription, 3Ui64> attributeDescriptions = Vertex::getAttributeDescriptions();
+	#ifdef _WIN32
+			std::array<VkVertexInputAttributeDescription, 3Ui64> attributeDescriptions = Vertex::getAttributeDescriptions();
+	#elif __unix__
+		std::array<VkVertexInputAttributeDescription, 3ULL> attributeDescriptions = Vertex::getAttributeDescriptions();
+	#endif
 
 	//Vertex data format
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
