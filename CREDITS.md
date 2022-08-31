@@ -3,4 +3,4 @@
 
 - CMake files
 - GNU/Linux support
-- Wrote [`compile_shaders.py`](src/scripts/compile_shaders.py) and [`lint.py`](src/scripts/lint.py)
+- Wrote [`compile_shaders.py`](src/scripts/compile_shaders.py)
