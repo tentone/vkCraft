@@ -3,8 +3,9 @@
  - Project made as a way of learning the basics about the Vulkan API.
 
 ## How to run
- - Download GLW, GLFW and the LunarG Vulkan SDK.
- - Open the solution in Visual Studio.
+ - Download libraries
+   - [GLM](https://bitbucket.org/sgrottel_nuget/glm/src), [GLW](https://github.com/mallocc/glw), [GLFW](https://www.glfw.org/), [STB Image](https://github.com/nothings/stb) and [LunarG Vulkan SDK](https://www.lunarg.com/vulkan-sdk/).
+ - Open the solution in [Visual Studio](https://visualstudio.microsoft.com/vs/community/).
  - Configure project with the downloaded libs.
  - Build and run project.
 
@@ -17,7 +18,7 @@
  - Blocks types are decided based on the weight relative to the surface, the same goes for underwater blocks.
 
 ## Chunk structure
- - World chunks are ornganized as linked list of chunks.
+ - World chunks are ornganized as 3D linked list of chunks.
  - Each chunk holds its data and 6 pointers to its neighbors (left, right, up, down, front, back). 
  - On generation the nodes flood trough the known links to find already created neighbors.
 ```
@@ -40,9 +41,9 @@
  - Try to use a geometry shader to generate the chunk geometry on the fly.
 
 ## References
- - Mike Bailey's Vulkan Guide (http://web.engr.oregonstate.edu/~mjb/vulkan/)
- - Alexander Overvoorde Vulkan Guide (https://vulkan-tutorial.com/Introduction)
+ - [Mike Bailey's Vulkan Guide](http://web.engr.oregonstate.edu/~mjb/vulkan/)
+ - [Alexander Overvoorde Vulkan Guide](https://vulkan-tutorial.com/Introduction)
 
 ## License
- - The project is under MIT license (Available on the project repository).
+ - The project is under MIT license, available on the project repository.
  
